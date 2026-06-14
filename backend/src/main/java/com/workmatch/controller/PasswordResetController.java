@@ -35,14 +35,7 @@ public class PasswordResetController {
         this.keycloakUserClient = keycloakUserClient;
         this.keycloakLoginClient = keycloakLoginClient;
     }
-
-    /*
-     * Renova o access token sem pedir credenciais novamente.
-     * Recebe: { "refreshToken": "..." }
-     * Retorna: novo access_token + refresh_token + expiresIn
-     *
-     * Essencial para mobile — access tokens expiram em ~5 min.
-     */
+    
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refresh(@RequestBody Map<String, String> body) {
         String refreshToken = body.get("refreshToken");

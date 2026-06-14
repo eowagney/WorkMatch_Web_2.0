@@ -1,4 +1,4 @@
-package com.workmatch.gateway.filter;
+package gateway.main.filter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

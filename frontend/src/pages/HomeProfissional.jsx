@@ -131,7 +131,6 @@ export default function HomeProfissional() {
 
   return (
     <PageLayout title="Serviços disponíveis" subtitle="Encontre oportunidades na sua área">
-      <Toast />
 
       {/* Filtros */}
       <div className="wm-filters">

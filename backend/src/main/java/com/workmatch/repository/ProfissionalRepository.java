@@ -16,6 +16,7 @@ public interface ProfissionalRepository extends JpaRepository<Profissional, UUID
     boolean existsByLogin(String login);
 
     Optional<Profissional> findByLogin(String login);
+    Optional<Profissional> findByEmail(String email);
 
     List<Profissional> findByCidadeContainingIgnoreCase(String cidade);
 

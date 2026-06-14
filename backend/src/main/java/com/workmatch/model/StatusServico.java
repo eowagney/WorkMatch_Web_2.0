@@ -5,5 +5,6 @@ public enum StatusServico {
     NEGOCIANDO,
     CONTRATADO,
     ANDAMENTO,
-    FINALIZADO
+    FINALIZADO,
+    CANCELADO
 }

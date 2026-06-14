@@ -136,10 +136,10 @@ public class ServicoService {
     public ServicoResponse arquivar(UUID id) {
         Servico servico = buscarEntidade(id);
         if (servico.getStatus() == StatusServico.FINALIZADO
-                || servico.getStatus() == StatusServico.ARQUIVADO) {
+                || servico.getStatus() == StatusServico.CANCELADO) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Serviço já encerrado");
         }
-        servico.setStatus(StatusServico.ARQUIVADO);
+        servico.setStatus(StatusServico.CANCELADO);
         return mapper.toResponse(servicoRepository.save(servico));
     }
 
@@ -181,7 +181,7 @@ public class ServicoService {
             case ANDAMENTO  -> StatusServico.FINALIZADO;
             case FINALIZADO -> throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Serviço já finalizado");
-            case ARQUIVADO  -> throw new ResponseStatusException(HttpStatus.CONFLICT,
+            case CANCELADO  -> throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Serviço arquivado não pode ter status avançado");
         };
     }

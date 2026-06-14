@@ -1,4 +1,4 @@
-package main.java.gateway.demo.filter;
+package gateway.main.filter;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license

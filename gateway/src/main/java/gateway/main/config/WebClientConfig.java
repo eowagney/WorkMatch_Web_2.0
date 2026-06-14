@@ -1,4 +1,4 @@
-package main.java.gateway.demo.config;
+package gateway.main.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

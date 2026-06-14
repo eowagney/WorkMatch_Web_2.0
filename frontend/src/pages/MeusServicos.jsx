@@ -72,7 +72,7 @@ function IconUsers() {
 export default function MeusServicos() {
   const { user }  = useAuth();
   const navigate  = useNavigate();
-  const { showToast, Toast } = useToast();
+  const { showToast } = useToast();
 
   const ehProfissional = user?.role === "PROFISSIONAL";
   const tabs           = ehProfissional ? TABS_PROFISSIONAL : TABS_CLIENTE;
@@ -146,7 +146,6 @@ export default function MeusServicos() {
 
   return (
     <PageLayout title="Meus Serviços">
-      <Toast />
 
       {/* Abas */}
       <div className="wm-tabs" role="tablist">
