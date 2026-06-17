@@ -1,24 +1,3 @@
-/**
- * WorkMatch — pages/NovoServico.jsx
- * CEL Design System v3.0
- *
- * Lógica 100% preservada:
- *  - MENSAGEM_INICIAL / mensagens state / input / dadosColetados
- *  - handleEnviar / handlePublicar / handleKeyDown
- *  - enviarMensagemIA / extrairDadosColetados (aiService)
- *  - bottomRef para auto-scroll
- *  - loading / publicando states
- *
- * Alterações visuais:
- *  - "Olá! 👋 Sou a assistente..." → remove 👋
- *  - Info banner: 🤖 → SVG Bot, rgba(109,40,217) → rgba(30,95,175)
- *  - Typing indicator: var(--clr-purple) → var(--clr-blue) explícito
- *  - Resumo card: 📋 → SVG Clipboard, purple → blue
- *  - "✅ Confirmar e publicar" → SVG CheckCircle + texto
- *  - "✅ Serviço publicado" na mensagem → sem emoji
- *  - "Enviar →" → SVG Send
- */
-
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth }     from "../context/AuthContext";

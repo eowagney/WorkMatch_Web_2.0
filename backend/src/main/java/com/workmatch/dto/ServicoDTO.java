@@ -17,7 +17,7 @@ public record ServicoDTO(
         String especialidade,
 
         @NotBlank(message = "Descrição obrigatória")
-        @Size(max = 100)
+        @Size(max = 1000)
         String descricao,
 
         @NotBlank(message = "Cidade obrigatório")
