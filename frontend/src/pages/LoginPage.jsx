@@ -306,7 +306,18 @@ export default function LoginPage() {
 
               </div>
             </div>
-
+            <div style={{ textAlign: "right", marginTop: -4 }}>
+              <button
+                type="button"
+                onClick={() => navigate("/esqueci-senha")}
+                style={{
+                  background: "none", border: "none", color: "var(--clr-blue)",
+                  fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "inherit",
+                }}
+              >
+                Esqueci minha senha
+              </button>
+            </div>
             {/* ── Botão entrar ── */}
             <Btn
               type="submit"

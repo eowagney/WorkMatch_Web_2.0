@@ -33,3 +33,9 @@ keycloak:
 groq:
   api:
     key: ${GROQ_API_KEY}
+
+app:
+  reset-token:
+    # Reaproveita a variável JWT_SECRET que já existe no .env do backend.
+    # Se não estiver definida, usa um valor padrão (só serve pra dev local).
+    secret: ${JWT_SECRET:workmatch-dev-secret-troque-em-producao}

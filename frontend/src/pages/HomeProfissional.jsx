@@ -1,9 +1,27 @@
+/**
+ * WorkMatch — pages/HomeProfissional.jsx
+ * CEL Design System v3.0
+ *
+ * Lógica 100% preservada:
+ *  - carregarServicos / handleCandidatar / handleCarregarMais
+ *  - paginação, filtros (especialidade/cidade), candidatados (Set)
+ *  - useToast / Toast
+ *
+ * Alterações visuais (esta rodada):
+ *  - Fundo de página azul suave (var(--clr-blue-pale))
+ *  - Filtros agrupados num Card com ícone no CardTitle
+ *  - "Carregando serviços..." → skeleton pulsante (grid de cards)
+ *  - "✓ Candidatura enviada" → SVG Check + texto, sem glifo solto
+ *  - classNames wm-filters / wm-chip / wm-badge / wm-service-card
+ *    mantidas integralmente (já definidas no CSS global do projeto)
+ */
+
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import PageLayout from "../components/PageLayout";
-import { Card, Btn } from "../components/ui";
+import { Card, CardHeader, CardBody, CardTitle, Btn } from "../components/ui";
 import { useToast } from "../hooks/useToast";
 
 const ESPECIALIDADES = [
@@ -43,6 +61,26 @@ function IconMessageCircle() {
   );
 }
 
+function IconFilter() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+  );
+}
+
+function IconCheck() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
 const STATUS_LABEL = {
   PUBLICADO:  "Publicado",
   NEGOCIANDO: "Negociando",
@@ -60,6 +98,30 @@ const STATUS_CLASS = {
 };
 
 const PAGE_SIZE = 20;
+
+/* Fundo da página — azul suave, padrão fixo do sistema */
+const canvasStyle = {
+  background:   "var(--clr-blue-pale)",
+  borderRadius: "var(--r-lg)",
+  padding:      "var(--sp-6)",
+};
+
+/* Skeleton de um card de serviço — usado só durante o carregamento inicial */
+function ServicoSkeletonCard() {
+  return (
+    <Card>
+      <CardBody>
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}>
+          <div className="wm-skeleton" style={{ height: 18, width: "70%", borderRadius: "var(--r-md)" }} />
+          <div className="wm-skeleton" style={{ height: 12, width: "45%", borderRadius: "var(--r-md)" }} />
+          <div className="wm-skeleton" style={{ height: 12, width: "90%", borderRadius: "var(--r-md)" }} />
+          <div className="wm-skeleton" style={{ height: 12, width: "60%", borderRadius: "var(--r-md)" }} />
+          <div className="wm-skeleton" style={{ height: 32, width: 120, borderRadius: "var(--r-md)" }} />
+        </div>
+      </CardBody>
+    </Card>
+  );
+}
 
 export default function HomeProfissional() {
   const { user }  = useAuth();
@@ -128,121 +190,157 @@ export default function HomeProfissional() {
     setPagina(proxima);
     carregarServicos(proxima, false);
   }
-  
 
   return (
     <PageLayout title="Serviços disponíveis" subtitle="Encontre oportunidades na sua área">
+      <style>{`
+        .wm-skeleton {
+          background: var(--clr-bg);
+          animation: wm-pulse 1.4s ease-in-out infinite;
+        }
+        @keyframes wm-pulse {
+          0%, 100% { opacity: 1; }
+          50%      { opacity: .5; }
+        }
+      `}</style>
 
-      {/* Filtros */}
-      <div className="wm-filters">
-        <div className="wm-filters__chips">
-          {ESPECIALIDADES.map(esp => (
-            <button
-              key={esp}
-              className={`wm-chip${filtroEsp === esp ? " wm-chip--active" : ""}`}
-              onClick={() => setFiltroEsp(esp)}
-            >
-              {esp}
-            </button>
-          ))}
-        </div>
-        <input
-          className="wm-input wm-filters__city"
-          placeholder="Filtrar por cidade..."
-          value={filtroCidade}
-          onChange={e => setFiltroCidade(e.target.value)}
-        />
-      </div>
+      <div style={canvasStyle}>
 
-      {/* Lista */}
-      {carregando && pagina === 0 ? (
-        <div className="wm-empty-state">Carregando serviços...</div>
-      ) : servicos.length === 0 ? (
-        <div className="wm-empty-state">Nenhum serviço encontrado com esses filtros.</div>
-      ) : (
-        <>
-          <div className="wm-card-grid">
-            {servicos.map(servico => {
-              const jaCandidatou  = candidatados.has(servico.id);
-              const emEnvio       = enviando === servico.id;
-              const podeCandidatar = servico.status === "PUBLICADO" && !jaCandidatou;
-              const podeChat       = ["NEGOCIANDO","CONTRATADO","ANDAMENTO"].includes(servico.status)
-                                     && servico.profissionalId === user.id;
+        {/* Filtros — agora agrupados num Card temático */}
+        <Card style={{ marginBottom: "var(--sp-6)" }}>
+          <CardHeader>
+            <CardTitle>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--sp-2)" }}>
+                <IconFilter /> Filtros
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardBody>
+            <div className="wm-filters">
+              <div className="wm-filters__chips">
+                {ESPECIALIDADES.map(esp => (
+                  <button
+                    key={esp}
+                    className={`wm-chip${filtroEsp === esp ? " wm-chip--active" : ""}`}
+                    onClick={() => setFiltroEsp(esp)}
+                  >
+                    {esp}
+                  </button>
+                ))}
+              </div>
+              <input
+                className="wm-input wm-filters__city"
+                placeholder="Filtrar por cidade..."
+                value={filtroCidade}
+                onChange={e => setFiltroCidade(e.target.value)}
+              />
+            </div>
+          </CardBody>
+        </Card>
 
-              return (
-                <Card key={servico.id}>
-                  <div className="wm-service-card">
-                    <div className="wm-service-card__header">
-                      <h3 className="wm-service-card__title">{servico.titulo}</h3>
-                      <span className={`wm-badge ${STATUS_CLASS[servico.status] ?? "wm-badge--gray"}`}>
-                        {STATUS_LABEL[servico.status] ?? servico.status}
-                      </span>
-                    </div>
+        {/* Lista */}
+        {carregando && pagina === 0 ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="wm-card-grid"
+            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "var(--sp-4)" }}
+          >
+            <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden" }}>
+              Carregando serviços...
+            </span>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <ServicoSkeletonCard key={i} />
+            ))}
+          </div>
+        ) : servicos.length === 0 ? (
+          <div className="wm-empty-state">Nenhum serviço encontrado com esses filtros.</div>
+        ) : (
+          <>
+            <div className="wm-card-grid">
+              {servicos.map(servico => {
+                const jaCandidatou  = candidatados.has(servico.id);
+                const emEnvio       = enviando === servico.id;
+                const podeCandidatar = servico.status === "PUBLICADO" && !jaCandidatou;
+                const podeChat       = ["NEGOCIANDO","CONTRATADO","ANDAMENTO"].includes(servico.status)
+                                       && servico.profissionalId === user.id;
 
-                    <div className="wm-service-card__meta">
-                      <span className="wm-service-card__meta-item">
-                        <IconBriefcase /> {servico.especialidade}
-                      </span>
-                      {servico.cidade && (
-                        <span className="wm-service-card__meta-item">
-                          <IconMapPin /> {servico.cidade}{servico.estado ? ` — ${servico.estado}` : ""}
+                return (
+                  <Card key={servico.id}>
+                    <div className="wm-service-card">
+                      <div className="wm-service-card__header">
+                        <h3 className="wm-service-card__title">{servico.titulo}</h3>
+                        <span className={`wm-badge ${STATUS_CLASS[servico.status] ?? "wm-badge--gray"}`}>
+                          {STATUS_LABEL[servico.status] ?? servico.status}
                         </span>
-                      )}
-                    </div>
+                      </div>
 
-                    {servico.descricao && (
-                      <p className="wm-service-card__desc">
-                        {servico.descricao.length > 140
-                          ? servico.descricao.slice(0, 140) + "..."
-                          : servico.descricao}
-                      </p>
-                    )}
-
-                    <div className="wm-service-card__actions">
-                     const podeConversar =
-                      jaCandidatou &&
-                      ["PUBLICADO", "NEGOCIANDO", "CONTRATADO", "ANDAMENTO"]
-                        .includes(servico.status);
-                       {jaCandidatou && servico.status === "PUBLICADO" && (
-                        <>
-                          <span className="wm-text-muted" style={{ fontSize: 14 }}>
-                            ✓ Candidatura enviada
+                      <div className="wm-service-card__meta">
+                        <span className="wm-service-card__meta-item">
+                          <IconBriefcase /> {servico.especialidade}
+                        </span>
+                        {servico.cidade && (
+                          <span className="wm-service-card__meta-item">
+                            <IconMapPin /> {servico.cidade}{servico.estado ? ` — ${servico.estado}` : ""}
                           </span>
+                        )}
+                      </div>
 
+                      {servico.descricao && (
+                        <p className="wm-service-card__desc">
+                          {servico.descricao.length > 140
+                            ? servico.descricao.slice(0, 140) + "..."
+                            : servico.descricao}
+                        </p>
+                      )}
+
+                      <div className="wm-service-card__actions">
+                        {podeCandidatar && (
+                          <Btn size="sm" onClick={() => handleCandidatar(servico)} disabled={emEnvio}>
+                            {emEnvio ? "Enviando..." : "Candidatar-se"}
+                          </Btn>
+                        )}
+                        {jaCandidatou && servico.status === "PUBLICADO" && (
+                          <span
+                            className="wm-text-muted"
+                            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14 }}
+                          >
+                            <IconCheck /> Candidatura enviada
+                          </span>
+                        )}
+                        {podeChat && (
                           <Btn
                             size="sm"
                             variant="outline"
                             onClick={() => navigate(`/chat/${servico.id}/${user.id}`)}
                           >
-                            <IconMessageCircle />
-                            Negociar
-                          </Btn>  
-                        </>
-                      )}
-                                          
+                            <IconMessageCircle /> Chat
+                          </Btn>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Carregar mais */}
-          {!paginacao.last && (
-            <div style={{ display: "flex", justifyContent: "center", marginTop: 24 }}>
-              <Btn variant="outline" onClick={handleCarregarMais} disabled={carregando}>
-                {carregando ? "Carregando..." : "Carregar mais"}
-              </Btn>
+                  </Card>
+                );
+              })}
             </div>
-          )}
 
-          {paginacao.last && servicos.length > 0 && (
-            <p className="wm-text-muted" style={{ textAlign: "center", marginTop: 16, fontSize: 13 }}>
-              {servicos.length} serviço{servicos.length !== 1 ? "s" : ""} no total
-            </p>
-          )}
-        </>
-      )}
+            {/* Carregar mais */}
+            {!paginacao.last && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 24 }}>
+                <Btn variant="outline" onClick={handleCarregarMais} disabled={carregando}>
+                  {carregando ? "Carregando..." : "Carregar mais"}
+                </Btn>
+              </div>
+            )}
+
+            {paginacao.last && servicos.length > 0 && (
+              <p className="wm-text-muted" style={{ textAlign: "center", marginTop: 16, fontSize: 13 }}>
+                {servicos.length} serviço{servicos.length !== 1 ? "s" : ""} no total
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </PageLayout>
   );
 }

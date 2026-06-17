@@ -92,7 +92,7 @@ services:
       context: ../../gateway
     container_name: workmatch-gateway
     ports:
-      - "8082:8082"
+      - "8082:8080"
     environment:
       # Keycloak — necessário para o JwtAuthFilter validar tokens
       KEYCLOAK_INTROSPECT_URL: http://keycloak:8080/realms/workmatch/protocol/openid-connect/token/introspect

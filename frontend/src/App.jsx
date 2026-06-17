@@ -8,6 +8,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import InicioPage             from "./pages/InicioPage";
 import LoginPage              from "./pages/LoginPage";
 import CadastroPage           from "./pages/CadastroPage";
+import EsqueciSenhaPage       from "./pages/EsqueciSenhaPage";
+import RedefinirSenhaPage     from "./pages/RedefinirSenhaPage";
 import HomeCliente            from "./pages/HomeCliente";
 import HomeProfissional       from "./pages/HomeProfissional";
 import MeusServicos           from "./pages/MeusServicos";
@@ -38,6 +40,9 @@ export default function App() {
           <Route path="/inicio"   element={<InicioPage />} />
           <Route path="/login"    element={<LoginPage />} />
           <Route path="/cadastro" element={<CadastroPage />} />
+          <Route path="/cadastro" element={<CadastroPage />} />
+          <Route path="/esqueci-senha"   element={<EsqueciSenhaPage />} />
+          <Route path="/redefinir-senha" element={<RedefinirSenhaPage />} />
 
           {/* Redireciona /home pelo role */}
           <Route path="/home" element={

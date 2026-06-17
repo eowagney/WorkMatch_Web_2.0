@@ -24,9 +24,8 @@ public class ServicoController {
         this.service = service;
     }
 
-    @PostMapping    
+    @PostMapping
     public ResponseEntity<ServicoResponse> criar(@RequestBody @Valid ServicoDTO dto) {
-    
         return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
     }
 

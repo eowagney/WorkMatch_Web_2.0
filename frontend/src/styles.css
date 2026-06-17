@@ -116,7 +116,7 @@ ul, ol { list-style: none; }
 .wm-header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   background: var(--clr-navy);
-  height: var(--header-h);
+  min-height: var(--header-h);
   box-shadow: 0 1px 0 rgba(255,255,255,0.08), 0 4px 20px rgba(7,31,61,0.4);
 }
 .wm-header__inner {
@@ -170,7 +170,7 @@ ul, ol { list-style: none; }
   height: var(--header-h);
   background: var(--clr-navy);
   box-shadow: 0 1px 0 rgba(255,255,255,0.08), 0 4px 20px rgba(7,31,61,0.4);
-  display: flex; align-items: center; padding: 0 var(--sp-6) 0 var(--sp-10);
+  display: flex; align-items: center; padding: var(--sp-2) var(--sp-6) var(--sp-2) var(--sp-16);
   z-index: 100; gap: var(--sp-4);
 }
 .wm-topbar__back {
@@ -445,6 +445,51 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-badge--purple  { background: var(--clr-blue-pale);  color: var(--clr-blue); }   /* alias blue */
 .wm-badge--blue    { background: var(--clr-blue-pale);  color: var(--clr-blue); }
 .wm-badge--neutral { background: var(--clr-border);     color: var(--clr-text-mid); }
+.wm-badge--gray    { background: var(--clr-border);     color: var(--clr-text-mid); }
+.wm-badge--yellow  { background: var(--clr-yellow-pale); color: #92660B; }
+.wm-badge--green   { background: var(--clr-success-bg); color: var(--clr-success); }
+
+/* ── 14b. ABAS DE FILTRO (Meus Serviços) — CEL ── */
+
+.wm-tabs {
+  display: flex; gap: var(--sp-2); flex-wrap: wrap;
+  margin-bottom: var(--sp-6);
+}
+.wm-tab {
+  padding: var(--sp-2) var(--sp-4); border-radius: var(--r-full);
+  font-size: 0.85rem; font-weight: 600; font-family: var(--font-body);
+  cursor: pointer; border: 1.5px solid var(--clr-border);
+  background: var(--clr-surface); color: var(--clr-text-mid);
+  transition: all var(--t-fast);
+}
+.wm-tab:hover        { border-color: var(--clr-blue); color: var(--clr-blue); }
+.wm-tab--active      { border-color: transparent; background: var(--clr-blue); color: #fff; box-shadow: var(--shadow-blue, var(--shadow-sm)); }
+
+/* ── 14c. GRID E CARD DE SERVIÇO — CEL ── */
+
+.wm-card-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-5);
+}
+.wm-service-card { padding: var(--sp-6); }
+.wm-service-card__header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--sp-3); margin-bottom: var(--sp-2);
+}
+.wm-service-card__title {
+  font-family: var(--font-display); font-size: 1.15rem; font-weight: 400;
+  color: var(--clr-navy); letter-spacing: -0.01em; line-height: 1.25;
+}
+.wm-service-card__specialty { color: var(--clr-text-mid); font-size: 0.88rem; margin-bottom: var(--sp-4); }
+.wm-service-card__actions   { display: flex; gap: var(--sp-2); flex-wrap: wrap; padding-top: var(--sp-3); border-top: 1px solid var(--clr-border); }
+
+/* ── 14d. ESTADOS VAZIOS / TEXTO SECUNDÁRIO — CEL ── */
+
+.wm-empty-state {
+  text-align: center; color: var(--clr-text-mid); font-size: 0.95rem;
+  padding: var(--sp-12) var(--sp-6);
+}
+.wm-text-muted { color: var(--clr-text-mid); }
 
 /* ── 15. SKELETON — CEL shimmer ── */
 
@@ -739,7 +784,7 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
   .wm-page-hero__title  { font-size: 1.6rem; }
   .wm-form-grid-2, .wm-form-grid-3 { grid-template-columns: 1fr; }
   .wm-form-col-full     { grid-column: 1; }
-  .wm-topbar { padding-left: var(--sp-12); }
+  .wm-topbar { padding-left: var(--sp-16); }
 }
 
 @media (max-width: 480px) {

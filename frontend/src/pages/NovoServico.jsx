@@ -1,3 +1,32 @@
+/**
+ * WorkMatch — pages/NovoServico.jsx
+ * CEL Design System v3.0
+ *
+ * Lógica 100% preservada:
+ *  - MENSAGEM_INICIAL / mensagens state / input / dadosColetados
+ *  - handleEnviar / handlePublicar / handleKeyDown
+ *  - enviarMensagemIA / extrairDadosColetados (aiService)
+ *  - bottomRef para auto-scroll
+ *  - loading / publicando states
+ *
+ * Alterações visuais (rodada anterior):
+ *  - "Olá! 👋 Sou a assistente..." → remove 👋
+ *  - Info banner: 🤖 → SVG Bot, rgba(109,40,217) → rgba(30,95,175)
+ *  - Typing indicator: var(--clr-purple) → var(--clr-blue) explícito
+ *  - Resumo card: 📋 → SVG Clipboard, purple → blue
+ *  - "✅ Confirmar e publicar" → SVG CheckCircle + texto
+ *  - "✅ Serviço publicado" na mensagem → sem emoji
+ *  - "Enviar →" → SVG Send
+ *
+ * Alterações visuais (esta rodada):
+ *  - Fundo de página azul suave (var(--clr-blue-pale))
+ *  - Banner informativo: fundo passou de var(--clr-blue-pale) para
+ *    var(--clr-surface) + borda de destaque var(--clr-blue) — caso
+ *    contrário ele se misturaria com o novo fundo da página
+ *  - Área de mensagens: role="log" + aria-live="polite" (novas respostas
+ *    da IA são anunciadas a leitores de tela)
+ */
+
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth }     from "../context/AuthContext";
@@ -56,6 +85,13 @@ const MENSAGEM_INICIAL = {
   id:    1,
   autor: "ia",
   texto: "Olá! Sou a assistente do WorkMatch. Vou te ajudar a publicar seu serviço em poucos passos. Me conta: qual tipo de serviço você precisa?",
+};
+
+/* Fundo da página — azul suave, padrão fixo do sistema */
+const canvasStyle = {
+  background:   "var(--clr-blue-pale)",
+  borderRadius: "var(--r-lg)",
+  padding:      "var(--sp-6)",
 };
 
 /* =========================================================
@@ -175,169 +211,177 @@ export default function NovoServico() {
       subtitle="Converse com a IA para publicar"
       backPath="/home"
     >
+      <div style={canvasStyle}>
 
-      {/* ── Banner informativo — SVG Bot, rgba(30,95,175) substitui rgba(109,40,217) ── */}
-      <div style={{
-        background:   "var(--clr-blue-pale)",
-        border:       "1px solid rgba(30,95,175,0.2)",
-        borderRadius: "var(--r-lg)",
-        padding:      "var(--sp-4) var(--sp-5)",
-        display:      "flex",
-        gap:          "var(--sp-3)",
-        alignItems:   "flex-start",
-        marginBottom: "var(--sp-5)",
-        fontSize:     14,
-        color:        "var(--clr-blue)",
-      }}>
-        {/* SVG Bot — substitui 🤖 */}
-        <span style={{ flexShrink: 0, marginTop: 2 }}>
-          <IcoBot size={18} />
-        </span>
-        <p style={{ lineHeight: 1.6 }}>
-          Nossa IA vai extrair as informações do seu serviço por meio desta conversa
-          e publicar automaticamente para que profissionais possam se candidatar.
-        </p>
-      </div>
+        {/* ── Banner informativo — fundo "surface" + borda azul, para não
+             se misturar com o novo fundo azul suave da página ── */}
+        <div style={{
+          background:   "var(--clr-surface)",
+          border:       "1px solid var(--clr-border)",
+          borderLeft:   "4px solid var(--clr-blue)",
+          borderRadius: "var(--r-lg)",
+          padding:      "var(--sp-4) var(--sp-5)",
+          display:      "flex",
+          gap:          "var(--sp-3)",
+          alignItems:   "flex-start",
+          marginBottom: "var(--sp-5)",
+          fontSize:     14,
+          color:        "var(--clr-blue)",
+        }}>
+          {/* SVG Bot — substitui 🤖 */}
+          <span style={{ flexShrink: 0, marginTop: 2 }}>
+            <IcoBot size={18} />
+          </span>
+          <p style={{ lineHeight: 1.6 }}>
+            Nossa IA vai extrair as informações do seu serviço por meio desta conversa
+            e publicar automaticamente para que profissionais possam se candidatar.
+          </p>
+        </div>
 
-      {/* ── Área de chat ── */}
-      <Card style={{ marginBottom: "var(--sp-4)" }}>
-        <CardBody style={{ padding: 0 }}>
-          <div style={{
-            height:         420,
-            overflowY:      "auto",
-            padding:        "var(--sp-5)",
-            display:        "flex",
-            flexDirection:  "column",
-            gap:            "var(--sp-4)",
-          }}>
+        {/* ── Área de chat ── */}
+        <Card style={{ marginBottom: "var(--sp-4)" }}>
+          <CardBody style={{ padding: 0 }}>
+            <div
+              role="log"
+              aria-live="polite"
+              style={{
+                height:         420,
+                overflowY:      "auto",
+                padding:        "var(--sp-5)",
+                display:        "flex",
+                flexDirection:  "column",
+                gap:            "var(--sp-4)",
+              }}
+            >
 
-            {mensagens.map((msg) => {
-              const isUsuario = msg.autor === "usuario";
-              return (
-                <div
-                  key={msg.id}
-                  style={{
-                    display:        "flex",
-                    justifyContent: isUsuario ? "flex-end" : "flex-start",
-                  }}
-                >
-                  <div style={{
-                    maxWidth:    "78%",
-                    padding:     "var(--sp-3) var(--sp-4)",
-                    borderRadius: isUsuario
-                      ? "var(--r-lg) var(--r-lg) var(--r-sm) var(--r-lg)"
-                      : "var(--r-lg) var(--r-lg) var(--r-lg) var(--r-sm)",
-                    /* var(--clr-blue) substitui var(--clr-purple) nas mensagens do usuário */
-                    background:  isUsuario ? "var(--clr-blue)" : "var(--clr-bg)",
-                    color:       isUsuario ? "#fff"            : "var(--clr-text)",
-                    border:      isUsuario ? "none"            : "1px solid var(--clr-border)",
-                    fontSize:    14,
-                    lineHeight:  1.5,
-                    boxShadow:   "var(--shadow-xs)",
-                  }}>
-                    {msg.texto}
+              {mensagens.map((msg) => {
+                const isUsuario = msg.autor === "usuario";
+                return (
+                  <div
+                    key={msg.id}
+                    style={{
+                      display:        "flex",
+                      justifyContent: isUsuario ? "flex-end" : "flex-start",
+                    }}
+                  >
+                    <div style={{
+                      maxWidth:    "78%",
+                      padding:     "var(--sp-3) var(--sp-4)",
+                      borderRadius: isUsuario
+                        ? "var(--r-lg) var(--r-lg) var(--r-sm) var(--r-lg)"
+                        : "var(--r-lg) var(--r-lg) var(--r-lg) var(--r-sm)",
+                      /* var(--clr-blue) substitui var(--clr-purple) nas mensagens do usuário */
+                      background:  isUsuario ? "var(--clr-blue)" : "var(--clr-bg)",
+                      color:       isUsuario ? "#fff"            : "var(--clr-text)",
+                      border:      isUsuario ? "none"            : "1px solid var(--clr-border)",
+                      fontSize:    14,
+                      lineHeight:  1.5,
+                      boxShadow:   "var(--shadow-xs)",
+                    }}>
+                      {msg.texto}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Typing indicator — dots azuis, substitui purple ── */}
+              {loading && (
+                <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+                  <div style={{ display: "flex", gap: 5, padding: "var(--sp-3) var(--sp-4)" }}>
+                    {[0, 1, 2].map((i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width:        7,
+                          height:       7,
+                          borderRadius: "var(--r-full)",
+                          /* var(--clr-blue) explícito — substitui var(--clr-purple) */
+                          background:   "var(--clr-blue)",
+                          display:      "inline-block",
+                          animation:    `wmFadeUp 0.8s ease-in-out ${i * 0.2}s infinite alternate`,
+                          opacity:      0.6,
+                        }}
+                      />
+                    ))}
                   </div>
                 </div>
-              );
-            })}
+              )}
 
-            {/* Typing indicator — dots azuis, substitui purple ── */}
-            {loading && (
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
-                <div style={{ display: "flex", gap: 5, padding: "var(--sp-3) var(--sp-4)" }}>
-                  {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width:        7,
-                        height:       7,
-                        borderRadius: "var(--r-full)",
-                        /* var(--clr-blue) explícito — substitui var(--clr-purple) */
-                        background:   "var(--clr-blue)",
-                        display:      "inline-block",
-                        animation:    `wmFadeUp 0.8s ease-in-out ${i * 0.2}s infinite alternate`,
-                        opacity:      0.6,
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div ref={bottomRef} />
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* ── Card de resumo dos dados coletados ── */}
-      {dadosColetados && (
-        <Card style={{
-          marginBottom: "var(--sp-4)",
-          /* border blue explícito — substitui var(--clr-purple) */
-          border:       "1.5px solid var(--clr-blue)",
-        }}>
-          <CardBody>
-
-            {/* Título do resumo — SVG Clipboard, sem 📋 */}
-            <p style={{
-              fontWeight:    700,
-              marginBottom:  "var(--sp-3)",
-              color:         "var(--clr-blue)",
-              display:       "flex",
-              alignItems:    "center",
-              gap:           "var(--sp-2)",
-            }}>
-              <IcoClipboard /> Resumo do serviço
-            </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-2)", fontSize: 14 }}>
-              <p><strong>Título:</strong> {dadosColetados.titulo}</p>
-              <p><strong>Especialidade:</strong> {dadosColetados.especialidade}</p>
-              <p><strong>Descrição:</strong> {dadosColetados.descricao}</p>
-              <p><strong>Local:</strong> {dadosColetados.cidade} / {dadosColetados.estado}</p>
-            </div>
-
-            <div style={{ display: "flex", gap: "var(--sp-3)", marginTop: "var(--sp-4)" }}>
-              <Btn variant="secondary" onClick={() => setDadosColetados(null)} disabled={publicando}>
-                Corrigir
-              </Btn>
-
-              {/* SVG CheckCircle — substitui ✅ */}
-              <Btn variant="primary" onClick={handlePublicar} disabled={publicando}>
-                {publicando
-                  ? "Publicando..."
-                  : <><IcoCheckCircle /> Confirmar e publicar</>
-                }
-              </Btn>
+              <div ref={bottomRef} />
             </div>
           </CardBody>
         </Card>
-      )}
 
-      {/* ── Input de mensagem — SVG Send, substitui → ── */}
-      {!dadosColetados && (
-        <div style={{ display: "flex", gap: "var(--sp-3)" }}>
-          <textarea
-            className="wm-input"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Digite sua mensagem... (Enter para enviar)"
-            rows={2}
-            style={{ flex: 1, resize: "none", lineHeight: 1.5 }}
-            disabled={loading}
-          />
-          <Btn
-            variant="primary"
-            onClick={handleEnviar}
-            disabled={!input.trim() || loading}
-            style={{ alignSelf: "flex-end", height: 48 }}
-          >
-            <IcoSend />
-          </Btn>
-        </div>
-      )}
+        {/* ── Card de resumo dos dados coletados ── */}
+        {dadosColetados && (
+          <Card style={{
+            marginBottom: "var(--sp-4)",
+            /* border blue explícito — substitui var(--clr-purple) */
+            border:       "1.5px solid var(--clr-blue)",
+          }}>
+            <CardBody>
 
+              {/* Título do resumo — SVG Clipboard, sem 📋 */}
+              <p style={{
+                fontWeight:    700,
+                marginBottom:  "var(--sp-3)",
+                color:         "var(--clr-blue)",
+                display:       "flex",
+                alignItems:    "center",
+                gap:           "var(--sp-2)",
+              }}>
+                <IcoClipboard /> Resumo do serviço
+              </p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-2)", fontSize: 14 }}>
+                <p><strong>Título:</strong> {dadosColetados.titulo}</p>
+                <p><strong>Especialidade:</strong> {dadosColetados.especialidade}</p>
+                <p><strong>Descrição:</strong> {dadosColetados.descricao}</p>
+                <p><strong>Local:</strong> {dadosColetados.cidade} / {dadosColetados.estado}</p>
+              </div>
+
+              <div style={{ display: "flex", gap: "var(--sp-3)", marginTop: "var(--sp-4)" }}>
+                <Btn variant="secondary" onClick={() => setDadosColetados(null)} disabled={publicando}>
+                  Corrigir
+                </Btn>
+
+                {/* SVG CheckCircle — substitui ✅ */}
+                <Btn variant="primary" onClick={handlePublicar} disabled={publicando}>
+                  {publicando
+                    ? "Publicando..."
+                    : <><IcoCheckCircle /> Confirmar e publicar</>
+                  }
+                </Btn>
+              </div>
+            </CardBody>
+          </Card>
+        )}
+
+        {/* ── Input de mensagem — SVG Send, substitui → ── */}
+        {!dadosColetados && (
+          <div style={{ display: "flex", gap: "var(--sp-3)" }}>
+            <textarea
+              className="wm-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Digite sua mensagem... (Enter para enviar)"
+              rows={2}
+              style={{ flex: 1, resize: "none", lineHeight: 1.5 }}
+              disabled={loading}
+            />
+            <Btn
+              variant="primary"
+              onClick={handleEnviar}
+              disabled={!input.trim() || loading}
+              style={{ alignSelf: "flex-end", height: 48 }}
+            >
+              <IcoSend />
+            </Btn>
+          </div>
+        )}
+
+      </div>
     </PageLayout>
   );
 }
