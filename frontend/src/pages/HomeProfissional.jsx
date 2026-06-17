@@ -128,6 +128,7 @@ export default function HomeProfissional() {
     setPagina(proxima);
     carregarServicos(proxima, false);
   }
+  
 
   return (
     <PageLayout title="Serviços disponíveis" subtitle="Encontre oportunidades na sua área">
@@ -198,25 +199,27 @@ export default function HomeProfissional() {
                     )}
 
                     <div className="wm-service-card__actions">
-                      {podeCandidatar && (
-                        <Btn size="sm" onClick={() => handleCandidatar(servico)} disabled={emEnvio}>
-                          {emEnvio ? "Enviando..." : "Candidatar-se"}
-                        </Btn>
+                     const podeConversar =
+                      jaCandidatou &&
+                      ["PUBLICADO", "NEGOCIANDO", "CONTRATADO", "ANDAMENTO"]
+                        .includes(servico.status);
+                       {jaCandidatou && servico.status === "PUBLICADO" && (
+                        <>
+                          <span className="wm-text-muted" style={{ fontSize: 14 }}>
+                            ✓ Candidatura enviada
+                          </span>
+
+                          <Btn
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/chat/${servico.id}/${user.id}`)}
+                          >
+                            <IconMessageCircle />
+                            Negociar
+                          </Btn>  
+                        </>
                       )}
-                      {jaCandidatou && servico.status === "PUBLICADO" && (
-                        <span className="wm-text-muted" style={{ fontSize: 14 }}>
-                          ✓ Candidatura enviada
-                        </span>
-                      )}
-                      {podeChat && (
-                        <Btn
-                          size="sm"
-                          variant="outline"
-                          onClick={() => navigate(`/chat/${servico.id}/${user.id}`)}
-                        >
-                          <IconMessageCircle /> Chat
-                        </Btn>
-                      )}
+                                          
                     </div>
                   </div>
                 </Card>
