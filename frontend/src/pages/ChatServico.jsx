@@ -90,8 +90,8 @@ export default function ChatServico() {
   async function carregarDados() {
     try {
       const [sRes, mRes] = await Promise.all([
-        //  api.get(`/api/servicos/${servicoId}`),
-        // api.get(`/api/mensagens/servico/${servicoId}`),
+        api.get(`/api/servicos/${servicoId}`),
+        api.get(`/api/mensagens/servico/${servicoId}`),
       ]);
       setServico(sRes.data);
       setMensagens(mRes.data);
@@ -104,7 +104,7 @@ export default function ChatServico() {
 
   async function carregarMensagens() {
     try {
-      // const { data } = await api.get(`/api/mensagens/servico/${servicoId}`);
+      const { data } = await api.get(`/api/mensagens/servico/${servicoId}`);
       setMensagens(data);
     } catch {}
   }
@@ -125,8 +125,7 @@ export default function ChatServico() {
       await api.post("/api/mensagens", {
         servicoId,
         remetenteId:   user.id,
-        remetenteNome: user.nome,
-        role:          user.role,
+        remetenteTipo: user.role,   // "CLIENTE" ou "PROFISSIONAL"
         conteudo:      texto,
       });
       await carregarMensagens();
