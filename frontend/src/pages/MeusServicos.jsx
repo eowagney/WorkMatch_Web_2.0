@@ -1,30 +1,3 @@
-/**
- * WorkMatch — pages/MeusServicos.jsx
- * CEL Design System v3.0
- *
- * Lógica 100% preservada:
- *  - carregarDados / handleAvancar / handleCancelar / handleAvaliacaoSucesso
- *  - abas (TABS_CLIENTE / TABS_PROFISSIONAL) / servicosFiltrados
- *  - AvaliacaoModal / useToast
- *
- * Alterações visuais (rodada anterior):
- *  - Fundo de página azul suave (var(--clr-blue-pale))
- *  - Abas agrupadas num Card com ícone no CardTitle
- *  - "Carregando..." → skeleton pulsante (grid de cards)
- *  - "★ Avaliado" → reaproveita IconStar (sem glifo solto)
- *
- * Alterações visuais (esta rodada — refino de hierarquia e espaçamento):
- *  - Abas viraram um segmented control (pill) com contador por status,
- *    em vez de depender só da classe wm-tab (agora className + estilo
- *    inline garantido, sem remover a classe original)
- *  - Resumo "X serviços no total" acima das abas
- *  - "X serviço(s) encontrado(s)" acima do grid de resultados
- *  - Cada card de serviço ganhou um wrapper flex com gap consistente,
- *    ícones em especialidade/cidade/profissional, e ícones nos botões
- *    "Avançar status" e "Cancelar" (faltavam, os outros já tinham)
- *  - Grid de resultados com gap maior e minmax mais generoso
- *  - Estado vazio redesenhado como Card com ícone, em vez de texto solto
- */
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";

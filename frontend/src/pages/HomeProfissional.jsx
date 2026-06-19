@@ -1,20 +1,4 @@
-/**
- * WorkMatch — pages/HomeProfissional.jsx
- * CEL Design System v3.0
- *
- * Lógica 100% preservada:
- *  - carregarServicos / handleCandidatar / handleCarregarMais
- *  - paginação, filtros (especialidade/cidade), candidatados (Set)
- *  - useToast / Toast
- *
- * Alterações visuais (esta rodada):
- *  - Fundo de página azul suave (var(--clr-blue-pale))
- *  - Filtros agrupados num Card com ícone no CardTitle
- *  - "Carregando serviços..." → skeleton pulsante (grid de cards)
- *  - "✓ Candidatura enviada" → SVG Check + texto, sem glifo solto
- *  - classNames wm-filters / wm-chip / wm-badge / wm-service-card
- *    mantidas integralmente (já definidas no CSS global do projeto)
- */
+
 
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -184,7 +168,7 @@ export default function HomeProfissional() {
       setEnviando(null);
     }
   }
-
+ 
   function handleCarregarMais() {
     const proxima = pagina + 1;
     setPagina(proxima);
