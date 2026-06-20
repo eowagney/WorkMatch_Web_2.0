@@ -34,7 +34,6 @@ public class UsuarioService {
     @Transactional
     public Object cadastrar(UsuarioDTO dto) {
 
-        // Normaliza CPF e telefone — remove máscara independente do que veio no body
         String cpf      = limpar(dto.getCpf());
         String telefone = limpar(dto.getTelefone());
 

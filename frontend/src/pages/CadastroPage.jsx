@@ -1,22 +1,4 @@
-/**
- * WorkMatch — pages/CadastroPage.jsx
- * CEL Design System v3.0
- *
- * Lógica 100% preservada:
- *  - fmtCpf / fmtTel / fmtCep
- *  - validateStep1 / validateStep2 / validateStep3
- *  - escolherPerfil / handleChange / buscarCep / field
- *  - handleStep1Next / handleStep2Next / handleSubmit
- *  - INITIAL_USUARIO / INITIAL_PROFISSIONAL / ESTADOS
- *
- * Alterações visuais:
- *  - 🔧 painel esquerdo → SVG logo-mark CEL
- *  - "👤 Sou Cliente" / "🛠️ Sou Profissional" → SVG + texto
- *  - icon="emoji" em todos os <Input> → removido (prop ignorada)
- *  - 🔒 ícone de senha → SVG Lock
- *  - 🙈 / 👁️ toggle senha → SVG EyeOff / Eye
- *  - "🎉" no showToast → removido
- */
+
 
 import React, { useState } from "react";
 import { useNavigate }      from "react-router-dom";
@@ -281,7 +263,6 @@ export default function CadastroPage() {
       };
       const endpoint = isProfissional ? "/api/profissionais" : "/api/usuarios";
       await api.post(endpoint, payload);
-      /* Emoji 🎉 removido — padrão CEL */
       showToast("Conta criada com sucesso!", "success");
       setTimeout(() => { navigate("/login"); }, 1500);
     } catch (error) {

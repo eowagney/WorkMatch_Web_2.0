@@ -42,4 +42,25 @@ public class GlobalExceptionHandler {
         body.put("detalhe", ex.getClass().getSimpleName() + ": " + ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraint(
+            ConstraintViolationException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getConstraintViolations().forEach(v ->
+            errors.put(
+                v.getPropertyPath().toString(),
+                v.getMessage()
+            )
+        );
+
+        return ResponseEntity.badRequest().body(
+            Map.of(
+                "message", "Dados inválidos",
+                "errors", errors
+            )
+        );
+    }
 }
