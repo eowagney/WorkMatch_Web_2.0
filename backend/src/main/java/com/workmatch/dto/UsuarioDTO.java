@@ -46,8 +46,8 @@ public class UsuarioDTO {
         @Size(min = 6, message = "Senha mínima de 6 caracteres")
         private String senha;
 
-        @NotBlank(message = "Role é obrigatória")
-        @Pattern(regexp = "CLIENTE|PROFISSIONAL", message = "Role deve ser CLIENTE ou PROFISSIONAL")
+        // Role é sempre definida pelo controller (CLIENTE ou PROFISSIONAL)
+        // Não validada aqui para evitar falha quando o frontend não envia
         private String role;
 
         // Exclusivos de Profissional

@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -243,11 +241,15 @@ export default function HomeProfissional() {
           <>
             <div className="wm-card-grid">
               {servicos.map(servico => {
-                const jaCandidatou  = candidatados.has(servico.id);
-                const emEnvio       = enviando === servico.id;
+                const jaCandidatou   = candidatados.has(servico.id);
+                const emEnvio        = enviando === servico.id;
+                const foiEscolhido   = servico.profissionalId === user.id;
+                const statusAvancado = ["NEGOCIANDO","CONTRATADO","ANDAMENTO"].includes(servico.status);
+
                 const podeCandidatar = servico.status === "PUBLICADO" && !jaCandidatou;
-                const podeChat       = ["NEGOCIANDO","CONTRATADO","ANDAMENTO"].includes(servico.status)
-                                       && servico.profissionalId === user.id;
+                const aguardando     = jaCandidatou && servico.status === "PUBLICADO";
+                const podeChat       = statusAvancado && foiEscolhido;
+                const perdeu         = statusAvancado && jaCandidatou && !foiEscolhido;
 
                 return (
                   <Card key={servico.id}>
@@ -279,27 +281,49 @@ export default function HomeProfissional() {
                       )}
 
                       <div className="wm-service-card__actions">
+                        {/* 1. Candidatar */}
                         {podeCandidatar && (
                           <Btn size="sm" onClick={() => handleCandidatar(servico)} disabled={emEnvio}>
                             {emEnvio ? "Enviando..." : "Candidatar-se"}
                           </Btn>
                         )}
-                        {jaCandidatou && servico.status === "PUBLICADO" && (
+
+                        {/* 2. Aguardando resposta do cliente */}
+                        {aguardando && (
                           <span
                             className="wm-text-muted"
-                            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14 }}
+                            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14, color: "var(--clr-yellow)" }}
                           >
-                            <IconCheck /> Candidatura enviada
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            Aguardando resposta
                           </span>
                         )}
+
+                        {/* 3. Negociar / Chat — foi escolhido */}
                         {podeChat && (
                           <Btn
                             size="sm"
                             variant="outline"
                             onClick={() => navigate(`/chat/${servico.id}/${user.id}`)}
                           >
-                            <IconMessageCircle /> Chat
+                            <IconMessageCircle />
+                            {servico.status === "NEGOCIANDO" ? "Negociar" : "Chat"}
                           </Btn>
+                        )}
+
+                        {/* 4. Não selecionado */}
+                        {perdeu && (
+                          <span
+                            className="wm-text-muted"
+                            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--clr-text-light)" }}
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                            Outro profissional selecionado
+                          </span>
                         )}
                       </div>
                     </div>

@@ -1,25 +1,3 @@
-/**
- * WorkMatch — pages/HomeCliente.jsx
- * CEL Design System v3.0
- *
- * Lógica 100% preservada:
- *  - useAuth / primeiroNome / navigate
- *  - STATUS_CARDS paths / colors
- *  - COMO_FUNCIONA textos
- *  - hover handlers inline (onMouseEnter/Leave)
- *
- * Alterações visuais (rodada anterior):
- *  - "Olá, {nome} 👋" → "Olá, {nome}" sem emoji
- *  - "🤖 Iniciar com IA" → SVG Bot + texto
- *  - STATUS_CARDS: emojis → SVG por status
- *  - COMO_FUNCIONA: emojis → SVG por etapa
- *  - Badge de número de passo: usa var(--clr-blue) direto (sem depender do alias purple)
- *
- * Alterações visuais (esta rodada):
- *  - Fundo de página azul suave (var(--clr-blue-pale)) por trás do conteúdo
- *  - Status cards clicáveis: role="button" + tabIndex + aria-label + onKeyDown
- *    (Enter/Espaço), preservando onClick/onMouseEnter/onMouseLeave originais
- */
 
 import React from "react";
 import { useNavigate } from "react-router-dom";

@@ -1,21 +1,3 @@
-/**
- * WorkMatch — pages/ChatServico.jsx
- * CEL Design System v3.0
- *
- * Lógica 100% preservada:
- *  - carregarDados / carregarMensagens (polling 4s)
- *  - handleEnviar / isMinha / agruparPorData
- *  - bottomRef auto-scroll / poolRef interval
- *  - comentários de API preservados (código com // intacto)
- *
- * Alterações visuais:
- *  - Info card: rgba(109,40,217) → rgba(30,95,175) + blue-pale
- *  - Status badge no info card: var(--clr-purple) → var(--clr-blue)
- *  - Empty state 💬 → SVG MessageSquare
- *  - Bubble remetente: var(--clr-purple) → var(--clr-blue) explícito
- *  - Loading text → Spinner CEL
- *  - "Enviar →" → SVG Send
- */
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate }              from "react-router-dom";
@@ -125,7 +107,7 @@ export default function ChatServico() {
       await api.post("/api/mensagens", {
         servicoId,
         remetenteId:   user.id,
-        remetenteTipo: user.role,   // "CLIENTE" ou "PROFISSIONAL"
+        remetenteTipo: user.role, 
         conteudo:      texto,
       });
       await carregarMensagens();
