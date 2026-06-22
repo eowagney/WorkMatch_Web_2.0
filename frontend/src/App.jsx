@@ -5,20 +5,21 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth, AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-import InicioPage             from "./pages/InicioPage";
-import LoginPage              from "./pages/LoginPage";
-import CadastroPage           from "./pages/CadastroPage";
-import EsqueciSenhaPage       from "./pages/EsqueciSenhaPage";
-import RedefinirSenhaPage     from "./pages/RedefinirSenhaPage";
-import HomeCliente            from "./pages/HomeCliente";
-import HomeProfissional       from "./pages/HomeProfissional";
-import MeusServicos           from "./pages/MeusServicos";
-import NovoServico            from "./pages/NovoServico";
-import PerfilProfissional     from "./pages/PerfilProfissional";
-import ConfiguracaoPerfilPage from "./pages/ConfiguracaoPerfilPage";
-import SuporteClientePage     from "./pages/SuporteClientePage";
-import CandidatosServico      from "./pages/CandidatosServico";
-import ChatServico            from "./pages/ChatServico";
+import InicioPage                 from "./pages/InicioPage";
+import LoginPage                  from "./pages/LoginPage";
+import CadastroPage               from "./pages/CadastroPage";
+import EsqueciSenhaPage           from "./pages/EsqueciSenhaPage";
+import RedefinirSenhaPage         from "./pages/RedefinirSenhaPage";
+import HomeCliente                from "./pages/HomeCliente";
+import HomeProfissional           from "./pages/HomeProfissional";
+import MeusServicos               from "./pages/MeusServicos";
+import NovoServico                from "./pages/NovoServico";
+import PerfilProfissional         from "./pages/PerfilProfissional";
+import PerfilPublicoProfissional  from "./pages/PerfilPublicoProfissional";
+import ConfiguracaoPerfilPage     from "./pages/ConfiguracaoPerfilPage";
+import SuporteClientePage         from "./pages/SuporteClientePage";
+import CandidatosServico          from "./pages/CandidatosServico";
+import ChatServico                from "./pages/ChatServico";
 
 import "./styles.css";
 
@@ -36,11 +37,10 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* Públicas */}
-          <Route path="/"         element={<Navigate to="/inicio" replace />} />
-          <Route path="/inicio"   element={<InicioPage />} />
-          <Route path="/login"    element={<LoginPage />} />
-          <Route path="/cadastro" element={<CadastroPage />} />
-          <Route path="/cadastro" element={<CadastroPage />} />
+          <Route path="/"                element={<Navigate to="/inicio" replace />} />
+          <Route path="/inicio"          element={<InicioPage />} />
+          <Route path="/login"           element={<LoginPage />} />
+          <Route path="/cadastro"        element={<CadastroPage />} />
           <Route path="/esqueci-senha"   element={<EsqueciSenhaPage />} />
           <Route path="/redefinir-senha" element={<RedefinirSenhaPage />} />
 
@@ -71,6 +71,11 @@ export default function App() {
             <ProtectedRoute roles={["PROFISSIONAL"]}><PerfilProfissional /></ProtectedRoute>
           } />
 
+          {/* ── PERFIL PÚBLICO — acessível por ambos os roles ── */}
+          <Route path="/profissional/:profissionalId" element={
+            <ProtectedRoute><PerfilPublicoProfissional /></ProtectedRoute>
+          } />
+
           {/* ── COMPARTILHADAS ── */}
           <Route path="/meus-servicos" element={
             <ProtectedRoute><MeusServicos /></ProtectedRoute>
@@ -79,11 +84,10 @@ export default function App() {
             <ProtectedRoute><SuporteClientePage /></ProtectedRoute>
           } />
 
-          {/* Chat — ambas as variantes protegidas */}
+          {/* Chat */}
           <Route path="/chat/:servicoId/:profissionalId" element={
             <ProtectedRoute><ChatServico /></ProtectedRoute>
           } />
-          {/* B05 corrigido — rota sem profissionalId também exige login */}
           <Route path="/chat/:servicoId" element={
             <ProtectedRoute><ChatServico /></ProtectedRoute>
           } />

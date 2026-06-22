@@ -1,15 +1,14 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PageLayout from "../components/PageLayout";
 import { Btn, Card, CardBody } from "../components/ui";
+import api from "../services/api";
 
 /* =========================================================
    ÍCONES SVG — inline, Lucide-style
 ========================================================= */
 
-/* Bot / IA */
 const IcoBot = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -20,7 +19,6 @@ const IcoBot = ({ size = 20 }) => (
   </svg>
 );
 
-/* Clipboard — publicados */
 const IcoClipboard = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -31,7 +29,6 @@ const IcoClipboard = ({ size = 24 }) => (
   </svg>
 );
 
-/* MessageSquare — negociando */
 const IcoMessage = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -40,7 +37,6 @@ const IcoMessage = ({ size = 24 }) => (
   </svg>
 );
 
-/* Settings — em andamento */
 const IcoSettings = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -50,7 +46,6 @@ const IcoSettings = ({ size = 24 }) => (
   </svg>
 );
 
-/* CheckCircle — concluídos / etapa 4 */
 const IcoCheck = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -60,7 +55,6 @@ const IcoCheck = ({ size = 24 }) => (
   </svg>
 );
 
-/* Handshake / Users — negocie e contrate */
 const IcoHandshake = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -69,7 +63,6 @@ const IcoHandshake = ({ size = 24 }) => (
   </svg>
 );
 
-/* Sparks / publicação automática */
 const IcoSparks = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -79,50 +72,52 @@ const IcoSparks = ({ size = 24 }) => (
   </svg>
 );
 
+const IcoUsers = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    aria-hidden="true">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+
 /* =========================================================
-   DADOS — emoji substituído por componente Icon
+   DADOS ESTÁTICOS
 ========================================================= */
 
 const COMO_FUNCIONA = [
-  {
-    n: "1",
-    Icon: IcoBot,
-    title: "Converse com a IA",
-    desc: "Nossa inteligência artificial coleta os detalhes do seu serviço por meio de uma conversa simples e natural.",
-  },
-  {
-    n: "2",
-    Icon: IcoSparks,
-    title: "Publicação automática",
-    desc: "A IA organiza as informações e publica o seu serviço para que profissionais qualificados possam se candidatar.",
-  },
-  {
-    n: "3",
-    Icon: IcoHandshake,
-    title: "Negocie e contrate",
-    desc: "Avalie os candidatos, negocie os detalhes e contrate o profissional ideal para o seu serviço.",
-  },
-  {
-    n: "4",
-    Icon: IcoCheck,
-    title: "Serviço concluído",
-    desc: "Após a conclusão, avalie o profissional e ajude outros clientes a encontrar os melhores.",
-  },
+  { n: "1", Icon: IcoBot,       title: "Converse com a IA",       desc: "Nossa inteligência artificial coleta os detalhes do seu serviço por meio de uma conversa simples e natural." },
+  { n: "2", Icon: IcoSparks,    title: "Publicação automática",    desc: "A IA organiza as informações e publica o seu serviço para que profissionais qualificados possam se candidatar." },
+  { n: "3", Icon: IcoHandshake, title: "Negocie e contrate",       desc: "Avalie os candidatos, negocie os detalhes e contrate o profissional ideal para o seu serviço." },
+  { n: "4", Icon: IcoCheck,     title: "Serviço concluído",        desc: "Após a conclusão, avalie o profissional e ajude outros clientes a encontrar os melhores." },
 ];
 
 const STATUS_CARDS = [
-  { label: "Publicados",   Icon: IcoClipboard, color: "var(--clr-blue)",    path: "/meus-servicos?status=publicado"  },
-  { label: "Negociando",   Icon: IcoMessage,   color: "var(--clr-warning)", path: "/meus-servicos?status=negociando" },
-  { label: "Em andamento", Icon: IcoSettings,  color: "var(--clr-teal)",    path: "/meus-servicos?status=andamento"  },
-  { label: "Concluídos",   Icon: IcoCheck,     color: "var(--clr-success)", path: "/meus-servicos?status=concluido"  },
+  { label: "Publicados",   Icon: IcoClipboard, color: "var(--clr-blue)",    statuses: ["PUBLICADO"],            path: "/meus-servicos" },
+  { label: "Negociando",   Icon: IcoMessage,   color: "var(--clr-warning)", statuses: ["NEGOCIANDO"],           path: "/meus-servicos" },
+  { label: "Em andamento", Icon: IcoSettings,  color: "var(--clr-teal)",    statuses: ["CONTRATADO","ANDAMENTO"],path: "/meus-servicos" },
+  { label: "Concluídos",   Icon: IcoCheck,     color: "var(--clr-success)", statuses: ["FINALIZADO"],           path: "/meus-servicos" },
 ];
 
-/* Fundo da página — azul suave, padrão fixo do sistema */
-const canvasStyle = {
-  background:   "var(--clr-blue-pale)",
-  borderRadius: "var(--r-lg)",
-  padding:      "var(--sp-6)",
-};
+/* =========================================================
+   SKELETON DO CONTADOR
+========================================================= */
+
+function CounterSkeleton() {
+  return (
+    <div style={{
+      background:   "var(--clr-surface)",
+      borderRadius: "var(--r-lg)",
+      border:       "1px solid var(--clr-border)",
+      borderTop:    "3px solid var(--clr-border)",
+      padding:      "var(--sp-5)",
+    }}>
+      <div className="wm-skeleton" style={{ height: 28, width: 40, borderRadius: "var(--r-md)", marginBottom: "var(--sp-2)" }} />
+      <div className="wm-skeleton" style={{ height: 12, width: 70, borderRadius: "var(--r-md)" }} />
+    </div>
+  );
+}
 
 /* =========================================================
    COMPONENTE
@@ -133,6 +128,47 @@ export default function HomeCliente() {
   const { user }  = useAuth();
   const primeiroNome = user?.nome?.split(" ")[0] || "Cliente";
 
+  const [contadores,       setContadores]       = useState(null);
+  const [candidatosPendentes, setCandidatosPendentes] = useState(0);
+  const [carregando,       setCarregando]       = useState(true);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    carregarResumo();
+  }, [user?.id]);
+
+  async function carregarResumo() {
+    setCarregando(true);
+    try {
+      const { data: servicos } = await api.get(`/api/servicos/cliente/${user.id}`);
+
+      // Conta serviços por grupo de status
+      const contagem = {};
+      STATUS_CARDS.forEach(card => {
+        contagem[card.label] = servicos.filter(s =>
+          card.statuses.includes(s.status)
+        ).length;
+      });
+      setContadores(contagem);
+
+      // Busca candidatos pendentes em serviços PUBLICADO
+      const servicosPublicados = servicos.filter(s => s.status === "PUBLICADO");
+      if (servicosPublicados.length > 0) {
+        const resultados = await Promise.all(
+          servicosPublicados.map(s =>
+            api.get(`/api/candidaturas/servico/${s.id}`).catch(() => ({ data: [] }))
+          )
+        );
+        const total = resultados.reduce((acc, r) => acc + (r.data?.length ?? 0), 0);
+        setCandidatosPendentes(total);
+      }
+    } catch {
+      // silencioso — contadores ficam nulos, UI mostra "–"
+    } finally {
+      setCarregando(false);
+    }
+  }
+
   function handleStatusKeyDown(e, path) {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -142,33 +178,46 @@ export default function HomeCliente() {
 
   return (
     <PageLayout title="Início" subtitle="Bem-vindo ao WorkMatch">
-      <div style={canvasStyle}>
+      <style>{`
+        .wm-skeleton {
+          background: var(--clr-bg);
+          animation: wm-pulse 1.4s ease-in-out infinite;
+        }
+        @keyframes wm-pulse {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: .5; }
+        }
+      `}</style>
+
+      <div style={{
+        background:   "var(--clr-blue-pale)",
+        borderRadius: "var(--r-lg)",
+        padding:      "var(--sp-6)",
+      }}>
 
         {/* ── Banner boas-vindas ── */}
         <div
           className="wm-animate-fadeUp"
           style={{
-            background:    "linear-gradient(135deg, var(--clr-navy-deep) 0%, var(--clr-purple-mid) 100%)",
-            borderRadius:  "var(--r-xl)",
-            padding:       "var(--sp-8)",
-            color:         "#fff",
-            display:       "flex",
-            alignItems:    "center",
-            justifyContent:"space-between",
-            flexWrap:      "wrap",
-            gap:           "var(--sp-6)",
-            marginBottom:  "var(--sp-6)",
+            background:     "linear-gradient(135deg, var(--clr-navy-deep) 0%, var(--clr-navy-mid) 100%)",
+            borderRadius:   "var(--r-xl)",
+            padding:        "var(--sp-8)",
+            color:          "#fff",
+            display:        "flex",
+            alignItems:     "center",
+            justifyContent: "space-between",
+            flexWrap:       "wrap",
+            gap:            "var(--sp-6)",
+            marginBottom:   "var(--sp-6)",
           }}
         >
           <div>
-            {/* Saudação — emoji 👋 removido, padrão CEL */}
             <p style={{
               fontSize: 13, color: "rgba(255,255,255,0.6)", fontWeight: 600,
               textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "var(--sp-2)",
             }}>
               Olá, {primeiroNome}
             </p>
-
             <h2 style={{
               fontFamily: "var(--font-display)",
               fontSize: "clamp(22px, 3vw, 32px)",
@@ -176,14 +225,12 @@ export default function HomeCliente() {
             }}>
               Precisa de um profissional?
             </h2>
-
             <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 15, maxWidth: 420, lineHeight: 1.6 }}>
               Converse com nossa IA e publique seu serviço em minutos.
               Profissionais da sua região vão se candidatar.
             </p>
           </div>
 
-          {/* Botão IA — SVG Bot, sem emoji 🤖 */}
           <Btn
             variant="accent"
             size="lg"
@@ -195,9 +242,48 @@ export default function HomeCliente() {
           </Btn>
         </div>
 
-        {/* ── Resumo de serviços por status ── */}
-        <div style={{ marginBottom: "var(--sp-6)" }}>
+        {/* ── Badge de candidatos pendentes ── */}
+        {!carregando && candidatosPendentes > 0 && (
+          <div
+            onClick={() => navigate("/meus-servicos")}
+            style={{
+              background:   "var(--clr-warning-bg)",
+              border:       "1.5px solid var(--clr-warning)",
+              borderRadius: "var(--r-lg)",
+              padding:      "var(--sp-4) var(--sp-5)",
+              display:      "flex",
+              alignItems:   "center",
+              gap:          "var(--sp-3)",
+              marginBottom: "var(--sp-5)",
+              cursor:       "pointer",
+              transition:   "opacity var(--t-fast)",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            <span style={{
+              background:   "var(--clr-warning)",
+              color:        "#fff",
+              borderRadius: "var(--r-full)",
+              fontWeight:   800,
+              fontSize:     13,
+              padding:      "2px 10px",
+              flexShrink:   0,
+            }}>
+              {candidatosPendentes}
+            </span>
+            <span style={{ fontSize: 14, color: "var(--clr-warning)", fontWeight: 600 }}>
+              <IcoUsers size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />
+              {candidatosPendentes === 1
+                ? "novo candidato aguardando sua resposta"
+                : "novos candidatos aguardando sua resposta"
+              } — clique para ver
+            </span>
+          </div>
+        )}
 
+        {/* ── Contadores por status ── */}
+        <div style={{ marginBottom: "var(--sp-6)" }}>
           <div style={{
             display: "flex", alignItems: "center",
             justifyContent: "space-between", marginBottom: "var(--sp-4)",
@@ -222,46 +308,56 @@ export default function HomeCliente() {
             gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
             gap: "var(--sp-4)",
           }}>
-            {STATUS_CARDS.map(({ label, Icon, color, path }, i) => (
-              <div
-                key={label}
-                className={`wm-animate-fadeUp wm-delay-${i + 1}`}
-                role="button"
-                tabIndex={0}
-                aria-label={label}
-                onClick={() => navigate(path)}
-                onKeyDown={(e) => handleStatusKeyDown(e, path)}
-                style={{
-                  background:    "var(--clr-surface)",
-                  borderRadius:  "var(--r-lg)",
-                  border:        "1px solid var(--clr-border)",
-                  borderTop:     `3px solid ${color}`,
-                  padding:       "var(--sp-5)",
-                  cursor:        "pointer",
-                  transition:    "box-shadow var(--t-base), transform var(--t-base)",
-                  boxShadow:     "var(--shadow-xs)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow  = "var(--shadow-md)";
-                  e.currentTarget.style.transform  = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow  = "var(--shadow-xs)";
-                  e.currentTarget.style.transform  = "none";
-                }}
-              >
-                {/* Ícone SVG no lugar do emoji */}
-                <div style={{
-                  marginBottom: "var(--sp-3)", color,
-                  display: "flex", alignItems: "center",
-                }}>
-                  <Icon size={28} />
+            {carregando
+              ? Array.from({ length: 4 }).map((_, i) => <CounterSkeleton key={i} />)
+              : STATUS_CARDS.map(({ label, Icon, color, path }, i) => (
+                <div
+                  key={label}
+                  className={`wm-animate-fadeUp wm-delay-${i + 1}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={label}
+                  onClick={() => navigate(path)}
+                  onKeyDown={(e) => handleStatusKeyDown(e, path)}
+                  style={{
+                    background:   "var(--clr-surface)",
+                    borderRadius: "var(--r-lg)",
+                    border:       "1px solid var(--clr-border)",
+                    borderTop:    `3px solid ${color}`,
+                    padding:      "var(--sp-5)",
+                    cursor:       "pointer",
+                    transition:   "box-shadow var(--t-base), transform var(--t-base)",
+                    boxShadow:    "var(--shadow-xs)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = "var(--shadow-md)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = "var(--shadow-xs)";
+                    e.currentTarget.style.transform = "none";
+                  }}
+                >
+                  <div style={{ marginBottom: "var(--sp-2)", color, display: "flex", alignItems: "center" }}>
+                    <Icon size={28} />
+                  </div>
+                  {/* Contador real */}
+                  <p style={{
+                    fontSize:     28,
+                    fontWeight:   800,
+                    color:        contadores?.[label] > 0 ? color : "var(--clr-text-light)",
+                    lineHeight:   1,
+                    marginBottom: "var(--sp-1)",
+                    fontFamily:   "var(--font-body)",
+                  }}>
+                    {contadores?.[label] ?? 0}
+                  </p>
+                  <p style={{ fontWeight: 600, color: "var(--clr-navy)", fontSize: 13 }}>
+                    {label}
+                  </p>
                 </div>
-                <p style={{ fontWeight: 700, color: "var(--clr-navy)", fontSize: 13 }}>
-                  {label}
-                </p>
-              </div>
-            ))}
+              ))
+            }
           </div>
         </div>
 
@@ -282,34 +378,27 @@ export default function HomeCliente() {
             {COMO_FUNCIONA.map(({ n, Icon, title, desc }, i) => (
               <Card key={n} className={`wm-animate-fadeUp wm-delay-${i + 1}`}>
                 <CardBody>
-
-                  {/* Ícone SVG + badge de número — sem emoji */}
                   <div style={{
                     position: "relative", display: "inline-flex",
-                    marginBottom: "var(--sp-4)",
-                    color: "var(--clr-blue)",
+                    marginBottom: "var(--sp-4)", color: "var(--clr-blue)",
                   }}>
                     <Icon size={32} />
-
-                    {/* Badge do número — var(--clr-blue) direto, sem alias purple */}
                     <span style={{
-                      position:       "absolute", top: -6, right: -10,
-                      background:     "var(--clr-blue)", color: "#fff",
+                      position: "absolute", top: -6, right: -10,
+                      background: "var(--clr-blue)", color: "#fff",
                       width: 20, height: 20, borderRadius: "var(--r-full)",
-                      display:        "flex", alignItems: "center", justifyContent: "center",
+                      display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: 11, fontWeight: 900,
                     }}>
                       {n}
                     </span>
                   </div>
-
                   <p style={{ fontWeight: 700, color: "var(--clr-navy)", marginBottom: "var(--sp-2)", fontSize: 15 }}>
                     {title}
                   </p>
                   <p style={{ fontSize: 13, color: "var(--clr-text-mid)", lineHeight: 1.6 }}>
                     {desc}
                   </p>
-
                 </CardBody>
               </Card>
             ))}

@@ -2,29 +2,12 @@
  * WorkMatch — pages/NovoServico.jsx
  * CEL Design System v3.0
  *
- * Lógica 100% preservada:
- *  - MENSAGEM_INICIAL / mensagens state / input / dadosColetados
- *  - handleEnviar / handlePublicar / handleKeyDown
- *  - enviarMensagemIA / extrairDadosColetados (aiService)
- *  - bottomRef para auto-scroll
- *  - loading / publicando states
- *
- * Alterações visuais (rodada anterior):
- *  - "Olá! 👋 Sou a assistente..." → remove 👋
- *  - Info banner: 🤖 → SVG Bot, rgba(109,40,217) → rgba(30,95,175)
- *  - Typing indicator: var(--clr-purple) → var(--clr-blue) explícito
- *  - Resumo card: 📋 → SVG Clipboard, purple → blue
- *  - "✅ Confirmar e publicar" → SVG CheckCircle + texto
- *  - "✅ Serviço publicado" na mensagem → sem emoji
- *  - "Enviar →" → SVG Send
- *
- * Alterações visuais (esta rodada):
- *  - Fundo de página azul suave (var(--clr-blue-pale))
- *  - Banner informativo: fundo passou de var(--clr-blue-pale) para
- *    var(--clr-surface) + borda de destaque var(--clr-blue) — caso
- *    contrário ele se misturaria com o novo fundo da página
- *  - Área de mensagens: role="log" + aria-live="polite" (novas respostas
- *    da IA são anunciadas a leitores de tela)
+ * Melhorias desta versão:
+ *  - Chips de respostas rápidas contextuais por etapa
+ *  - Barra de progresso visual (4 etapas)
+ *  - Mensagem inicial mais direta
+ *  - Layout mais compacto e moderno
+ *  - Chips desaparecem após uso
  */
 
 import React, { useState, useRef, useEffect } from "react";
@@ -36,16 +19,23 @@ import { enviarMensagemIA, extrairDadosColetados } from "../services/aiService";
 import api from "../services/api";
 
 /* =========================================================
-   ÍCONES SVG — inline, Lucide-style
+   ÍCONES SVG
 ========================================================= */
 
-const IcoBot = ({ size = 18 }) => (
+const IcoSend = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
     aria-hidden="true">
-    <path d="M12 8V4H8"/>
-    <rect width="16" height="12" x="4" y="8" rx="2"/>
-    <path d="M2 14h2M20 14h2M9 17v1M15 17v1M9 13h.01M15 13h.01"/>
+    <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
+  </svg>
+);
+
+const IcoCheckCircle = ({ size = 15 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    aria-hidden="true">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+    <polyline points="22 4 12 14.01 9 11.01"/>
   </svg>
 );
 
@@ -59,62 +49,158 @@ const IcoClipboard = ({ size = 15 }) => (
   </svg>
 );
 
-const IcoCheckCircle = ({ size = 15 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true">
-    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-    <polyline points="22 4 12 14.01 9 11.01"/>
-  </svg>
-);
+/* =========================================================
+   CHIPS POR ETAPA
+   A IA detecta em qual etapa está pela última pergunta feita.
+   Mapeamos chips para cada contexto.
+========================================================= */
 
-const IcoSend = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true">
-    <path d="m22 2-7 20-4-9-9-4Z"/>
-    <path d="M22 2 11 13"/>
-  </svg>
-);
+const CHIPS_ESPECIALIDADE = [
+  "Eletricista", "Encanador", "Pintor", "Pedreiro",
+  "Diarista", "Jardineiro", "Técnico em TI", "Marceneiro",
+  "Serralheiro", "Chaveiro",
+];
+
+const CHIPS_DESCRICAO = [
+  "Instalação elétrica completa",
+  "Conserto de vazamento",
+  "Pintura de apartamento",
+  "Reforma de banheiro",
+  "Limpeza geral da casa",
+  "Manutenção de jardim",
+  "Instalação de ar-condicionado",
+  "Montagem de móveis",
+];
+
+const CHIPS_CIDADE_ESTADO = [
+  "São Paulo / SP",
+  "Rio de Janeiro / RJ",
+  "Belo Horizonte / MG",
+  "Curitiba / PR",
+  "Salvador / BA",
+  "Fortaleza / CE",
+  "Brasília / DF",
+  "Recife / PE",
+];
+
+/* Detecta qual conjunto de chips mostrar baseado no histórico */
+function detectarEtapa(mensagens) {
+  if (mensagens.length <= 1) return "especialidade";
+
+  const ultimaIA = [...mensagens]
+    .reverse()
+    .find((m) => m.autor === "ia")?.texto?.toLowerCase() || "";
+
+  if (
+    ultimaIA.includes("descrição") ||
+    ultimaIA.includes("descricao") ||
+    ultimaIA.includes("precisa ser feito") ||
+    ultimaIA.includes("o que")
+  ) return "descricao";
+
+  if (
+    ultimaIA.includes("cidade") ||
+    ultimaIA.includes("estado") ||
+    ultimaIA.includes("localidade") ||
+    ultimaIA.includes("onde")
+  ) return "cidade";
+
+  if (mensagens.filter((m) => m.autor === "usuario").length === 0)
+    return "especialidade";
+
+  return null;
+}
+
+function getChips(etapa) {
+  if (etapa === "especialidade") return CHIPS_ESPECIALIDADE;
+  if (etapa === "descricao")    return CHIPS_DESCRICAO;
+  if (etapa === "cidade")       return CHIPS_CIDADE_ESTADO;
+  return [];
+}
 
 /* =========================================================
-   MENSAGEM INICIAL — emoji 👋 removido (padrão CEL)
+   BARRA DE PROGRESSO
+========================================================= */
+
+const ETAPAS = ["Especialidade", "Descrição", "Localização", "Confirmação"];
+
+function ProgressBar({ etapaAtual }) {
+  const idx = etapaAtual === "especialidade" ? 0
+    : etapaAtual === "descricao" ? 1
+    : etapaAtual === "cidade"    ? 2
+    : 3;
+
+  return (
+    <div style={{ marginBottom: "var(--sp-5)" }}>
+      <div style={{
+        display:       "flex",
+        justifyContent:"space-between",
+        marginBottom:  "var(--sp-2)",
+      }}>
+        {ETAPAS.map((label, i) => (
+          <span key={label} style={{
+            fontSize:   11,
+            fontWeight: i <= idx ? 600 : 400,
+            color:      i <= idx ? "var(--clr-blue)" : "var(--clr-text-light)",
+            flex:       1,
+            textAlign:  "center",
+          }}>
+            {label}
+          </span>
+        ))}
+      </div>
+      <div style={{
+        height:       4,
+        background:   "var(--clr-border)",
+        borderRadius: "var(--r-full)",
+        overflow:     "hidden",
+      }}>
+        <div style={{
+          height:       "100%",
+          width:        `${((idx + 1) / ETAPAS.length) * 100}%`,
+          background:   "var(--clr-blue)",
+          borderRadius: "var(--r-full)",
+          transition:   "width 0.4s ease",
+        }} />
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   MENSAGEM INICIAL
 ========================================================= */
 
 const MENSAGEM_INICIAL = {
   id:    1,
   autor: "ia",
-  texto: "Olá! Sou a assistente do WorkMatch. Vou te ajudar a publicar seu serviço em poucos passos. Me conta: qual tipo de serviço você precisa?",
-};
-
-/* Fundo da página — azul suave, padrão fixo do sistema */
-const canvasStyle = {
-  background:   "var(--clr-blue-pale)",
-  borderRadius: "var(--r-lg)",
-  padding:      "var(--sp-6)",
+  texto: "Olá! Para publicar seu serviço, preciso de 3 informações rápidas. Qual tipo de profissional você precisa?",
 };
 
 /* =========================================================
-   COMPONENTE
+   COMPONENTE PRINCIPAL
 ========================================================= */
 
 export default function NovoServico() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [mensagens,     setMensagens]     = useState([MENSAGEM_INICIAL]);
-  const [input,         setInput]         = useState("");
-  const [loading,       setLoading]       = useState(false);
-  const [dadosColetados,setDadosColetados]= useState(null);
-  const [publicando,    setPublicando]    = useState(false);
+  const [mensagens,      setMensagens]      = useState([MENSAGEM_INICIAL]);
+  const [input,          setInput]          = useState("");
+  const [loading,        setLoading]        = useState(false);
+  const [dadosColetados, setDadosColetados] = useState(null);
+  const [publicando,     setPublicando]     = useState(false);
 
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [mensagens]);
+  }, [mensagens, loading]);
 
-  /* ── Lógica preservada integralmente ── */
+  const etapa = dadosColetados ? "confirmacao" : detectarEtapa(mensagens);
+  const chips = dadosColetados ? [] : getChips(etapa);
+
+  /* ── Envio de mensagem ── */
 
   function handleKeyDown(e) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -123,10 +209,10 @@ export default function NovoServico() {
     }
   }
 
-  async function handleEnviar() {
-    if (!input.trim() || loading) return;
+  async function handleEnviar(textoOverride) {
+    const texto = (textoOverride ?? input).trim();
+    if (!texto || loading) return;
 
-    const texto = input.trim();
     setInput("");
 
     const novaMensagemUsuario = { id: Date.now(), autor: "usuario", texto };
@@ -150,8 +236,7 @@ export default function NovoServico() {
           {
             id:    Date.now() + 1,
             autor: "ia",
-            /* Sem "Perfeito!" nem emojis — tom neutro CEL */
-            texto: "Coletei todas as informações. Veja o resumo abaixo e confirme para publicar.",
+            texto: "Coletei tudo! Veja o resumo abaixo e confirme para publicar.",
           },
         ]);
       } else {
@@ -166,7 +251,7 @@ export default function NovoServico() {
         {
           id:    Date.now() + 1,
           autor: "ia",
-          texto: "Erro ao processar mensagem. Tente novamente.",
+          texto: "Erro ao processar. Tente novamente.",
         },
       ]);
     } finally {
@@ -174,13 +259,24 @@ export default function NovoServico() {
     }
   }
 
+  /* Chip clicado — envia como mensagem direto */
+  function handleChip(texto) {
+    // chips de cidade/estado precisam separar cidade e estado
+    if (etapa === "cidade" && texto.includes(" / ")) {
+      const [cidade, estado] = texto.split(" / ");
+      handleEnviar(`${cidade}, ${estado}`);
+    } else {
+      handleEnviar(texto);
+    }
+  }
+
+  /* ── Publicar serviço ── */
+
   async function handlePublicar() {
     if (!dadosColetados) return;
     setPublicando(true);
     try {
       await api.post("/api/servicos", { ...dadosColetados, clienteId: user.id });
-
-      /* Mensagem de sucesso sem emoji ✅ — padrão CEL */
       setMensagens((prev) => [
         ...prev,
         {
@@ -189,7 +285,6 @@ export default function NovoServico() {
           texto: "Serviço publicado com sucesso! Profissionais já podem se candidatar.",
         },
       ]);
-
       setTimeout(() => navigate("/meus-servicos"), 2000);
     } catch {
       setMensagens((prev) => [
@@ -205,78 +300,79 @@ export default function NovoServico() {
     }
   }
 
+  /* =========================================================
+     RENDER
+  ========================================================= */
+
   return (
     <PageLayout
       title="Novo serviço"
-      subtitle="Converse com a IA para publicar"
+      subtitle="Responda 3 perguntas rápidas para publicar"
       backPath="/home"
     >
-      <div style={canvasStyle}>
+      <div style={{
+        background:   "var(--clr-blue-pale)",
+        borderRadius: "var(--r-lg)",
+        padding:      "var(--sp-6)",
+      }}>
 
-        {/* ── Banner informativo — fundo "surface" + borda azul, para não
-             se misturar com o novo fundo azul suave da página ── */}
-        <div style={{
-          background:   "var(--clr-surface)",
-          border:       "1px solid var(--clr-border)",
-          borderLeft:   "4px solid var(--clr-blue)",
-          borderRadius: "var(--r-lg)",
-          padding:      "var(--sp-4) var(--sp-5)",
-          display:      "flex",
-          gap:          "var(--sp-3)",
-          alignItems:   "flex-start",
-          marginBottom: "var(--sp-5)",
-          fontSize:     14,
-          color:        "var(--clr-blue)",
-        }}>
-          {/* SVG Bot — substitui 🤖 */}
-          <span style={{ flexShrink: 0, marginTop: 2 }}>
-            <IcoBot size={18} />
-          </span>
-          <p style={{ lineHeight: 1.6 }}>
-            Nossa IA vai extrair as informações do seu serviço por meio desta conversa
-            e publicar automaticamente para que profissionais possam se candidatar.
-          </p>
-        </div>
+        {/* ── Progresso ── */}
+        <ProgressBar etapaAtual={etapa} />
 
         {/* ── Área de chat ── */}
-        <Card style={{ marginBottom: "var(--sp-4)" }}>
+        <Card style={{ marginBottom: "var(--sp-3)" }}>
           <CardBody style={{ padding: 0 }}>
             <div
               role="log"
               aria-live="polite"
               style={{
-                height:         420,
-                overflowY:      "auto",
-                padding:        "var(--sp-5)",
-                display:        "flex",
-                flexDirection:  "column",
-                gap:            "var(--sp-4)",
+                height:        380,
+                overflowY:     "auto",
+                padding:       "var(--sp-5)",
+                display:       "flex",
+                flexDirection: "column",
+                gap:           "var(--sp-3)",
               }}
             >
-
               {mensagens.map((msg) => {
                 const isUsuario = msg.autor === "usuario";
                 return (
-                  <div
-                    key={msg.id}
-                    style={{
-                      display:        "flex",
-                      justifyContent: isUsuario ? "flex-end" : "flex-start",
-                    }}
-                  >
+                  <div key={msg.id} style={{
+                    display:        "flex",
+                    justifyContent: isUsuario ? "flex-end" : "flex-start",
+                  }}>
+                    {/* Avatar IA */}
+                    {!isUsuario && (
+                      <div style={{
+                        width:        28,
+                        height:       28,
+                        borderRadius: "var(--r-full)",
+                        background:   "var(--clr-blue)",
+                        color:        "#fff",
+                        display:      "flex",
+                        alignItems:   "center",
+                        justifyContent:"center",
+                        fontSize:     11,
+                        fontWeight:   700,
+                        flexShrink:   0,
+                        marginRight:  "var(--sp-2)",
+                        alignSelf:    "flex-end",
+                      }}>
+                        IA
+                      </div>
+                    )}
                     <div style={{
-                      maxWidth:    "78%",
-                      padding:     "var(--sp-3) var(--sp-4)",
+                      maxWidth:     "75%",
+                      padding:      "var(--sp-3) var(--sp-4)",
                       borderRadius: isUsuario
                         ? "var(--r-lg) var(--r-lg) var(--r-sm) var(--r-lg)"
                         : "var(--r-lg) var(--r-lg) var(--r-lg) var(--r-sm)",
-                      /* var(--clr-blue) substitui var(--clr-purple) nas mensagens do usuário */
-                      background:  isUsuario ? "var(--clr-blue)" : "var(--clr-bg)",
-                      color:       isUsuario ? "#fff"            : "var(--clr-text)",
-                      border:      isUsuario ? "none"            : "1px solid var(--clr-border)",
-                      fontSize:    14,
-                      lineHeight:  1.5,
-                      boxShadow:   "var(--shadow-xs)",
+                      background:   isUsuario ? "var(--clr-blue)"  : "var(--clr-surface)",
+                      color:        isUsuario ? "#fff"              : "var(--clr-text)",
+                      border:       isUsuario ? "none"              : "1px solid var(--clr-border)",
+                      fontSize:     14,
+                      lineHeight:   1.55,
+                      boxShadow:    "var(--shadow-xs)",
                     }}>
                       {msg.texto}
                     </div>
@@ -284,24 +380,32 @@ export default function NovoServico() {
                 );
               })}
 
-              {/* Typing indicator — dots azuis, substitui purple ── */}
+              {/* Typing indicator */}
               {loading && (
                 <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
-                  <div style={{ display: "flex", gap: 5, padding: "var(--sp-3) var(--sp-4)" }}>
+                  <div style={{
+                    width:        28, height: 28, borderRadius: "var(--r-full)",
+                    background:   "var(--clr-blue)", color: "#fff",
+                    display:      "flex", alignItems: "center", justifyContent: "center",
+                    fontSize:     11, fontWeight: 700, flexShrink: 0,
+                  }}>IA</div>
+                  <div style={{
+                    background:   "var(--clr-surface)",
+                    border:       "1px solid var(--clr-border)",
+                    borderRadius: "var(--r-lg)",
+                    padding:      "var(--sp-3) var(--sp-4)",
+                    display:      "flex",
+                    gap:          5,
+                    alignItems:   "center",
+                  }}>
                     {[0, 1, 2].map((i) => (
-                      <div
-                        key={i}
-                        style={{
-                          width:        7,
-                          height:       7,
-                          borderRadius: "var(--r-full)",
-                          /* var(--clr-blue) explícito — substitui var(--clr-purple) */
-                          background:   "var(--clr-blue)",
-                          display:      "inline-block",
-                          animation:    `wmFadeUp 0.8s ease-in-out ${i * 0.2}s infinite alternate`,
-                          opacity:      0.6,
-                        }}
-                      />
+                      <div key={i} style={{
+                        width: 6, height: 6,
+                        borderRadius: "var(--r-full)",
+                        background: "var(--clr-blue)",
+                        animation: `wmFadeUp 0.8s ease-in-out ${i * 0.2}s infinite alternate`,
+                        opacity: 0.5,
+                      }} />
                     ))}
                   </div>
                 </div>
@@ -312,69 +416,125 @@ export default function NovoServico() {
           </CardBody>
         </Card>
 
-        {/* ── Card de resumo dos dados coletados ── */}
+        {/* ── Chips de resposta rápida ── */}
+        {!dadosColetados && chips.length > 0 && !loading && (
+          <div style={{
+            background:    "var(--clr-surface)",
+            border:        "1px solid var(--clr-border)",
+            borderRadius:  "var(--r-lg)",
+            padding:       "var(--sp-4) var(--sp-5)",
+            marginBottom:  "var(--sp-3)",
+          }}>
+            <p style={{
+              fontSize:     12,
+              fontWeight:   600,
+              color:        "var(--clr-text-light)",
+              marginBottom: "var(--sp-3)",
+              textTransform:"uppercase",
+              letterSpacing:"0.05em",
+            }}>
+              Sugestões rápidas
+            </p>
+            <div style={{
+              display:  "flex",
+              flexWrap: "wrap",
+              gap:      "var(--sp-2)",
+            }}>
+              {chips.map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => handleChip(chip)}
+                  style={{
+                    padding:      "7px 16px",
+                    borderRadius: "var(--r-full)",
+                    border:       "1.5px solid var(--clr-blue)",
+                    background:   "var(--clr-blue-pale)",
+                    color:        "var(--clr-blue)",
+                    fontSize:     13,
+                    fontWeight:   500,
+                    cursor:       "pointer",
+                    transition:   "all var(--t-fast)",
+                    fontFamily:   "var(--font-body)",
+                    lineHeight:   1,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--clr-blue)";
+                    e.currentTarget.style.color = "#fff";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "var(--clr-blue-pale)";
+                    e.currentTarget.style.color = "var(--clr-blue)";
+                  }}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Card de resumo ── */}
         {dadosColetados && (
           <Card style={{
             marginBottom: "var(--sp-4)",
-            /* border blue explícito — substitui var(--clr-purple) */
             border:       "1.5px solid var(--clr-blue)",
           }}>
             <CardBody>
-
-              {/* Título do resumo — SVG Clipboard, sem 📋 */}
               <p style={{
-                fontWeight:    700,
-                marginBottom:  "var(--sp-3)",
-                color:         "var(--clr-blue)",
-                display:       "flex",
-                alignItems:    "center",
-                gap:           "var(--sp-2)",
+                fontWeight:   700,
+                marginBottom: "var(--sp-3)",
+                color:        "var(--clr-blue)",
+                display:      "flex",
+                alignItems:   "center",
+                gap:          "var(--sp-2)",
+                fontSize:     15,
               }}>
                 <IcoClipboard /> Resumo do serviço
               </p>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-2)", fontSize: 14 }}>
+              <div style={{
+                display:       "flex",
+                flexDirection: "column",
+                gap:           "var(--sp-2)",
+                fontSize:      14,
+              }}>
                 <p><strong>Título:</strong> {dadosColetados.titulo}</p>
                 <p><strong>Especialidade:</strong> {dadosColetados.especialidade}</p>
                 <p><strong>Descrição:</strong> {dadosColetados.descricao}</p>
                 <p><strong>Local:</strong> {dadosColetados.cidade} / {dadosColetados.estado}</p>
               </div>
-
               <div style={{ display: "flex", gap: "var(--sp-3)", marginTop: "var(--sp-4)" }}>
-                <Btn variant="secondary" onClick={() => setDadosColetados(null)} disabled={publicando}>
-                  Corrigir
+                <Btn variant="secondary" onClick={() => {
+                  setDadosColetados(null);
+                  setMensagens([MENSAGEM_INICIAL]);
+                }} disabled={publicando}>
+                  Recomeçar
                 </Btn>
-
-                {/* SVG CheckCircle — substitui ✅ */}
                 <Btn variant="primary" onClick={handlePublicar} disabled={publicando}>
-                  {publicando
-                    ? "Publicando..."
-                    : <><IcoCheckCircle /> Confirmar e publicar</>
-                  }
+                  {publicando ? "Publicando..." : <><IcoCheckCircle /> Confirmar e publicar</>}
                 </Btn>
               </div>
             </CardBody>
           </Card>
         )}
 
-        {/* ── Input de mensagem — SVG Send, substitui → ── */}
+        {/* ── Input de mensagem ── */}
         {!dadosColetados && (
-          <div style={{ display: "flex", gap: "var(--sp-3)" }}>
+          <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "flex-end" }}>
             <textarea
               className="wm-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Digite sua mensagem... (Enter para enviar)"
+              placeholder="Ou digite sua resposta... (Enter para enviar)"
               rows={2}
               style={{ flex: 1, resize: "none", lineHeight: 1.5 }}
               disabled={loading}
             />
             <Btn
               variant="primary"
-              onClick={handleEnviar}
+              onClick={() => handleEnviar()}
               disabled={!input.trim() || loading}
-              style={{ alignSelf: "flex-end", height: 48 }}
+              style={{ alignSelf: "flex-end", height: 48, minWidth: 48 }}
             >
               <IcoSend />
             </Btn>

@@ -6,7 +6,6 @@ import com.workmatch.dto.response.CandidatureResponse;
 import com.workmatch.model.Candidature;
 import com.workmatch.model.Profissional;
 import com.workmatch.model.Servico;
-import com.workmatch.model.Usuario;
 import com.workmatch.repository.CandidatureRepository;
 import com.workmatch.repository.ProfissionalRepository;
 import com.workmatch.repository.ServicoRepository;
@@ -55,7 +54,6 @@ public class CandidatureService {
         candidatura.setProfissional(profissional);
         candidatura = candidatureRepository.save(candidatura);
 
-        // Mensagem automática de apresentação
         MenssengerDTO msg = new MenssengerDTO();
         msg.setServicoId(servico.getId());
         msg.setRemetenteId(profissional.getId());
@@ -72,22 +70,24 @@ public class CandidatureService {
                 .stream().map(this::toResponse).toList();
     }
 
-    // Novo — usado pelo HomeProfissional para saber onde já se candidatou
     public List<CandidatureResponse> listarPorProfissional(UUID profissionalId) {
         return candidatureRepository.findByProfissionalId(profissionalId)
                 .stream().map(this::toResponse).toList();
     }
 
     private CandidatureResponse toResponse(Candidature c) {
+        Profissional p = c.getProfissional();
         return new CandidatureResponse(
                 c.getId(),
                 c.getServico().getId(),
-                c.getProfissional().getId(),
-                c.getProfissional().getNome(),
-                c.getProfissional().getEspecialidade(),
-                c.getProfissional().getCidade(),
-                c.getProfissional().getEstado(),
-                c.getCriadoEm()
+                p.getId(),
+                p.getNome(),
+                p.getEspecialidade(),
+                p.getCidade(),
+                p.getEstado(),
+                c.getCriadoEm(),
+                p.getAvaliacaoMedia(),
+                p.getTotalAvaliacoes()
         );
     }
 }
