@@ -87,7 +87,8 @@ public class CandidatureService {
                 p.getEstado(),
                 c.getCriadoEm(),
                 p.getAvaliacaoMedia(),
-                p.getTotalAvaliacoes()
+                p.getTotalAvaliacoes(),
+                p.getExperienciaAnos()  // faltava este campo
         );
     }
 }

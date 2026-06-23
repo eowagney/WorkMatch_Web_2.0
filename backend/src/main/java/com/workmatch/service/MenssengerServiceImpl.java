@@ -111,8 +111,13 @@ public class MenssengerServiceImpl extends MenssengerService {
         }
 
         if (dto.getDestinatarioId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "destinatarioId é obrigatório para mensagens de profissional.");
+            // Tenta resolver pelo cliente do serviço
+            if (servico.getCliente() != null) {
+                dto.setDestinatarioId(servico.getCliente().getId());
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "destinatarioId é obrigatório para mensagens de profissional.");
+            }
         }
 
         Usuario destinatario = usuarioRepository.findById(dto.getDestinatarioId())
@@ -152,16 +157,12 @@ public class MenssengerServiceImpl extends MenssengerService {
             r.setRemetenteId(m.getRemetenteUsuario().getId());
             r.setRemetenteNome(m.getRemetenteUsuario().getNome());
             r.setRemetenteTipo("CLIENTE");
-            if (m.getServico().getProfissional() != null) {
-                r.setDestinatarioId(m.getServico().getProfissional().getId());
-            }
+            dto.setDestinatarioId(servico.getProfissional().getId());
         } else if (m.getRemetente() != null) {
             r.setRemetenteId(m.getRemetente().getId());
             r.setRemetenteNome(m.getRemetente().getNome());
             r.setRemetenteTipo("PROFISSIONAL");
-            if (m.getDestinatario() != null) {
-                r.setDestinatarioId(m.getDestinatario().getId());
-            }
+            dto.setDestinatarioId(servico.getCliente().getId());
         }
 
         return r;

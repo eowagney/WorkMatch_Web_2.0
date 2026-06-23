@@ -168,10 +168,17 @@ export default function ChatServico() {
     setInput("");
     setEnviando(true);
     try {
+      // destinatarioId: profissional envia para o cliente do serviço,
+      // cliente envia para o profissional — o backend resolve pelo remetenteTipo
+      const destinatarioId = user.role === "PROFISSIONAL"
+        ? servico?.clienteId
+        : servico?.profissionalId;
+
       await api.post("/api/mensagens", {
         servicoId,
         remetenteId:   user.id,
         remetenteTipo: user.role,
+        destinatarioId,
         conteudo:      texto,
       });
       await pollMensagens();
