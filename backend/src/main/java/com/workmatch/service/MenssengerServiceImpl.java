@@ -157,12 +157,10 @@ public class MenssengerServiceImpl extends MenssengerService {
             r.setRemetenteId(m.getRemetenteUsuario().getId());
             r.setRemetenteNome(m.getRemetenteUsuario().getNome());
             r.setRemetenteTipo("CLIENTE");
-            dto.setDestinatarioId(servico.getProfissional().getId());
         } else if (m.getRemetente() != null) {
             r.setRemetenteId(m.getRemetente().getId());
             r.setRemetenteNome(m.getRemetente().getNome());
             r.setRemetenteTipo("PROFISSIONAL");
-            dto.setDestinatarioId(servico.getCliente().getId());
         }
 
         return r;
