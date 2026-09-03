@@ -4,9 +4,9 @@ services:
     image: postgres:15
     container_name: workmatch-db
     environment:
-      POSTGRES_DB: postgres
+      POSTGRES_DB: workmatch
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: wmoartkch
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
@@ -44,9 +44,9 @@ services:
     command: start-dev
     environment:
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://db.titpsneyeukxbafbnebl.supabase.co:5432/postgres?user=postgres&password=wmoartkch
-      KC_DB_USERNAME: postgres
-      KC_DB_PASSWORD: wmoartkch
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
@@ -63,8 +63,8 @@ services:
     container_name: workmatch-backend
     environment:
       DB_USER: postgres
-      DB_PASS: wmoartkch
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db.titpsneyeukxbafbnebl.supabase.co:5432/postgres?user=postgres&password=wmoartkch
+      DB_PASS: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/workmatch
       KEYCLOAK_URL: http://keycloak:8080
       KEYCLOAK_REALM: workmatch
       KEYCLOAK_CLIENT_ID: workmatch-develop
