@@ -1,6 +1,5 @@
 server:
-  port: 8080
-
+  port: ${PORT:8080}
 spring:
   application:
     name: workmatch-gateway
@@ -26,6 +25,7 @@ spring:
             allowedOrigins:
               - "http://localhost:5174"
               - "http://127.0.0.1:5174"
+              - "https://workmatch-bay.vercel.app/"
             allowedMethods:
               - GET
               - POST
