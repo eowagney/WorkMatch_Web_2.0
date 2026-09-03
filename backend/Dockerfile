@@ -17,6 +17,5 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
 # Render usa a variável PORT
-EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
