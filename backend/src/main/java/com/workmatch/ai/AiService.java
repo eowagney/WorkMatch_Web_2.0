@@ -13,7 +13,7 @@ import java.util.Map;
 public class AiService {
 
     private static final String GROQ_URL    = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String MODEL       = "llama-3.3-70b-versatile";
+    private static final String MODEL       = "openai/gpt-oss-120b";
     private static final double TEMPERATURE = 0.5;
     private static final int    MAX_TOKENS  = 512;
 
