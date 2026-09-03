@@ -1,21 +1,3 @@
-/**
- * WorkMatch — pages/LoginPage.jsx
- * CEL Design System v3.0
- *
- * Lógica 100% preservada:
- *  - useContext(AuthContext) / login()
- *  - authService.login() / navigate
- *  - useToast / handleChange / handleSubmit / showPass
- *
- * Alterações visuais:
- *  - 🔧 painel esquerdo → SVG logo-mark WorkMatch CEL
- *  - 👋 no showToast → removido
- *  - icon="👤" no Input → SVG User inline no campo
- *  - 🔒 no input de senha → SVG Lock inline
- *  - 🙈 / 👁️ toggle senha → SVG EyeOff / Eye
- *  - Inputs com ícone seguem o padrão CEL: wm-input-wrapper + wm-input-icon
- */
-
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
