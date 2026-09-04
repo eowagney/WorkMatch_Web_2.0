@@ -14,7 +14,7 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "https://workmatch-bay.vercel.app"
+              - "https://workmatch-backend-d6f9.onrender.com"
             allowedMethods:
               - GET
               - POST
