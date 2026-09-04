@@ -1,5 +1,43 @@
+server:
+  port: ${PORT:8080}
 spring:
+  application:
+    name: workmatch-backend
+
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8081
+
+keycloak:
+  server-url: ${KEYCLOAK_URL:http://localhost:9090}
+  realm: ${KEYCLOAK_REALM:workmatch}
+  client-id: ${KEYCLOAK_CLIENT_ID:workmatch-develop}
+  # SEC-03 corrigido — sem valor default exposto no repositório
+  # a aplicação falha no startup se KEYCLOAK_CLIENT_SECRET não estiver definida
+  client-secret: ${KEYCLOAK_CLIENT_SECRET}
+  admin-username: ${KEYCLOAK_ADMIN_USER:admin}
+  admin-password: ${KEYCLOAK_ADMIN_PASS:admin}
+
+# Groq — chave de API para o assistente de IA (nunca vai ao frontend)
+groq:
+  api:
+    key: ${GROQ_API_KEY}
+
+app:
+  reset-token:
+    # Reaproveita a variável JWT_SECRET que já existe no .env do backend.
+    # Se não estiver definida, usa um valor padrão (só serve pra dev local).
+    secret: ${JWT_SECRET:workmatch-dev-secret-troque-em-producao}
