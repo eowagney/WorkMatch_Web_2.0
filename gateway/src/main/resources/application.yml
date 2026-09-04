@@ -8,22 +8,13 @@ spring:
     gateway:
       default-filters:
         - Retry=3
-        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
-
-      routes:
-        - id: backend-service
-          uri: https://workmatch-backend-d6f9.onrender.com
-          predicates:
-            - Path=/api/**
-          filters:
-            - StripPrefix=0
-            - PreserveHostHeader
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials 
 
       globalcors:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "https://workmatch-bay.vercel.app/"
+              - "https://workmatch-bay.vercel.app"
             allowedMethods:
               - GET
               - POST
