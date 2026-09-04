@@ -12,7 +12,7 @@ spring:
 
       routes:
         - id: backend-service
-          uri: http://workmatch-backend:8081
+          uri: https://workmatch-backend-d6f9.onrender.com
           predicates:
             - Path=/api/**
           filters:
@@ -23,8 +23,6 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "http://localhost:5174"
-              - "http://127.0.0.1:5174"
               - "https://workmatch-bay.vercel.app/"
             allowedMethods:
               - GET

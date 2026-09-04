@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8082",
+  baseURL: "https://workmatch-backend-d6f9.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
