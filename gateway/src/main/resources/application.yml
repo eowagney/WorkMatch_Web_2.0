@@ -1,20 +1,28 @@
 server:
   port: ${PORT:8080}
+
 spring:
   application:
     name: workmatch-gateway
 
   cloud:
     gateway:
+
+      routes:
+        - id: workmatch-backend
+          uri: https://workmatch-backend-d6f9.onrender.com
+          predicates:
+            - Path=/api/**
+
       default-filters:
         - Retry=3
-        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials 
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
 
       globalcors:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "https://workmatch-backend-d6f9.onrender.com"
+              - "https://workmatch-bay.vercel.app"
             allowedMethods:
               - GET
               - POST
