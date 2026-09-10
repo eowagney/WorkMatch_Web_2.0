@@ -20,7 +20,7 @@ server:
   port: 8081
 
 keycloak:
-  server-url: ${KEYCLOAK_URL:http://localhost:9090}
+  server-url: https://keycloak-24-0-3-jehn.onrender.com
   realm: ${KEYCLOAK_REALM:workmatch}
   client-id: ${KEYCLOAK_CLIENT_ID:workmatch-develop}
   # SEC-03 corrigido — sem valor default exposto no repositório
