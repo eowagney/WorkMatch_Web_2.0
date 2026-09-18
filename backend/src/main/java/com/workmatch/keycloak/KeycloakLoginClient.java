@@ -14,7 +14,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @Component
 public class KeycloakLoginClient {
 
-    private static final Logger log = LoggerFactory.getLogger(KeycloakLoginClient.class);
+    private static final Logger log =
+        LoggerFactory.getLogger(KeycloakLoginClient.class);
 
     private final WebClient          webClient;
     private final KeycloakProperties properties;
@@ -33,6 +34,12 @@ public class KeycloakLoginClient {
         form.add("username",      login);
         form.add("password",      senha);
         form.add("scope",         "openid");
+
+        log.info(
+        "Tentando autenticar no Keycloak: clientId={}, tokenUrl={}",
+        properties.getClientId(),
+        properties.getTokenUrl()
+        );
 
         return chamadaToken(form);
     }
