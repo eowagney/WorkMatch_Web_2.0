@@ -12,6 +12,8 @@ import com.workmatch.repository.UsuarioRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -21,6 +23,8 @@ public class AuthService {
     private final KeycloakLoginClient    keycloakLoginClient;
     private final UsuarioRepository      usuarioRepo;
     private final ProfissionalRepository profissionalRepo;
+    private static final Logger log =
+        LoggerFactory.getLogger(AuthService.class);
 
     public AuthService(KeycloakLoginClient keycloakLoginClient,
                        UsuarioRepository usuarioRepo,
@@ -32,13 +36,22 @@ public class AuthService {
 
     public LoginResponse login(LoginDTO dto) {
 
+        log.info("Keycloak login: clientId={}, tokenUrl={}",
+        properties.getClientId(),
+        properties.getTokenUrl());
+
         // 1. Autentica no Keycloak — valida as credenciais e obtém o JWT
         KeycloakTokenResponse tokenResponse;
         try {
             tokenResponse = keycloakLoginClient.login(dto.login(), dto.senha());
-        } catch (KeycloakIntegrationException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login ou senha inválidos");
-        }
+            } catch (KeycloakIntegrationException e) {
+        log.error("ERRO NO LOGIN COM KEYCLOAK: {}", e.getMessage(), e);
+
+        throw new ResponseStatusException(
+            HttpStatus.UNAUTHORIZED,
+            "Erro ao autenticar no Keycloak: " + e.getMessage()
+        );
+    }
 
         // 2. Busca o perfil no BD para montar a resposta com os dados do usuário
         Optional<Usuario> usuarioOpt = usuarioRepo.findByLogin(dto.login());
