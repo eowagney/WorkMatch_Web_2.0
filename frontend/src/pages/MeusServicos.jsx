@@ -8,9 +8,11 @@ import AvaliacaoModal from "../components/AvaliacaoModal";
 import { useToast } from "../hooks/useToast";
 
 const TABS_CLIENTE = [
-  { label: "Ativos",      statuses: ["PUBLICADO","NEGOCIANDO","CONTRATADO","ANDAMENTO"] },
-  { label: "Finalizados", statuses: ["FINALIZADO"] },
-  { label: "Arquivados",  statuses: ["ARQUIVADO"] },
+  { label: "Publicados",   statuses: ["PUBLICADO"] },
+  { label: "Negociando",   statuses: ["NEGOCIANDO"] },
+  { label: "Em andamento", statuses: ["CONTRATADO","ANDAMENTO"] },
+  { label: "Concluídos",   statuses: ["FINALIZADO"] },
+  { label: "Arquivados",   statuses: ["ARQUIVADO"] },
 ];
 
 const TABS_PROFISSIONAL = [

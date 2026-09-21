@@ -49,12 +49,6 @@ const IcoClipboard = ({ size = 15 }) => (
   </svg>
 );
 
-/* =========================================================
-   CHIPS POR ETAPA
-   A IA detecta em qual etapa está pela última pergunta feita.
-   Mapeamos chips para cada contexto.
-========================================================= */
-
 const CHIPS_ESPECIALIDADE = [
   "Eletricista", "Encanador", "Pintor", "Pedreiro",
   "Diarista", "Jardineiro", "Técnico em TI", "Marceneiro",
@@ -118,10 +112,6 @@ function getChips(etapa) {
   return [];
 }
 
-/* =========================================================
-   BARRA DE PROGRESSO
-========================================================= */
-
 const ETAPAS = ["Especialidade", "Descrição", "Localização", "Confirmação"];
 
 function ProgressBar({ etapaAtual }) {
@@ -167,19 +157,11 @@ function ProgressBar({ etapaAtual }) {
   );
 }
 
-/* =========================================================
-   MENSAGEM INICIAL
-========================================================= */
-
 const MENSAGEM_INICIAL = {
   id:    1,
   autor: "ia",
   texto: "Olá! Para publicar seu serviço, preciso de 3 informações rápidas. Qual tipo de profissional você precisa?",
 };
-
-/* =========================================================
-   COMPONENTE PRINCIPAL
-========================================================= */
 
 export default function NovoServico() {
   const navigate = useNavigate();
@@ -259,9 +241,7 @@ export default function NovoServico() {
     }
   }
 
-  /* Chip clicado — envia como mensagem direto */
   function handleChip(texto) {
-    // chips de cidade/estado precisam separar cidade e estado
     if (etapa === "cidade" && texto.includes(" / ")) {
       const [cidade, estado] = texto.split(" / ");
       handleEnviar(`${cidade}, ${estado}`);
@@ -270,39 +250,41 @@ export default function NovoServico() {
     }
   }
 
-  /* ── Publicar serviço ── */
-
   async function handlePublicar() {
-    if (!dadosColetados) return;
-    setPublicando(true);
-    try {
-      await api.post("/api/servicos", { ...dadosColetados, clienteId: user.id });
-      setMensagens((prev) => [
-        ...prev,
-        {
-          id:    Date.now(),
-          autor: "ia",
-          texto: "Serviço publicado com sucesso! Profissionais já podem se candidatar.",
-        },
-      ]);
-      setTimeout(() => navigate("/meus-servicos"), 2000);
-    } catch {
-      setMensagens((prev) => [
-        ...prev,
-        {
-          id:    Date.now(),
-          autor: "ia",
-          texto: "Erro ao publicar o serviço. Tente novamente.",
-        },
-      ]);
-    } finally {
-      setPublicando(false);
-    }
-  }
+  if (!dadosColetados) return;
 
-  /* =========================================================
-     RENDER
-  ========================================================= */
+  setPublicando(true);
+
+  try {
+    await api.post("/api/servicos", {
+      ...dadosColetados,
+      clienteId: user.id,
+    });
+
+    setMensagens((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        autor: "ia",
+        texto: "Serviço publicado com sucesso! Profissionais já podem se candidatar.",
+      },
+    ]);
+
+    setTimeout(() => navigate("/meus-servicos"), 2000);
+  } catch (error) {
+
+    setMensagens((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        autor: "ia",
+        texto: "Erro ao publicar o serviço. Tente novamente.",
+      },
+    ]);
+  } finally {
+    setPublicando(false);
+  }
+}
 
   return (
     <PageLayout

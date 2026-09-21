@@ -1,21 +1,3 @@
-/**
- * WorkMatch — pages/LoginPage.jsx
- * CEL Design System v3.0
- *
- * Lógica 100% preservada:
- *  - useContext(AuthContext) / login()
- *  - authService.login() / navigate
- *  - useToast / handleChange / handleSubmit / showPass
- *
- * Alterações visuais:
- *  - 🔧 painel esquerdo → SVG logo-mark WorkMatch CEL
- *  - 👋 no showToast → removido
- *  - icon="👤" no Input → SVG User inline no campo
- *  - 🔒 no input de senha → SVG Lock inline
- *  - 🙈 / 👁️ toggle senha → SVG EyeOff / Eye
- *  - Inputs com ícone seguem o padrão CEL: wm-input-wrapper + wm-input-icon
- */
-
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -24,10 +6,6 @@ import { authService }  from "../services/api";
 import { Btn }          from "../components/ui";
 import Toast            from "../components/Toast";
 import { useToast }     from "../hooks/useToast";
-
-/* =========================================================
-   ÍCONES SVG — inline, Lucide-style
-========================================================= */
 
 const IcoUser = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -67,28 +45,23 @@ const IcoEyeOff = () => (
   </svg>
 );
 
-/* Logo-mark WorkMatch — padrão CEL (amarelo + blue) */
 const LogoMarkLarge = () => (
   <svg width="72" height="72" viewBox="0 0 72 72" fill="none"
     xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <rect width="72" height="72" rx="20" fill="#F2C94C" fillOpacity="0.15"/>
-    {/* Chave inglesa WorkMatch */}
+    
     <path
       d="M50 24a13 13 0 0 0-12.5 16.6L19.5 58.8a4 4 0 1 0 5.66 5.66l18.1-18.1A13 13 0 1 0 50 24z"
       fill="#F2C94C" fillOpacity="0.9"
     />
     <circle cx="50" cy="37" r="6" fill="#1E5FAF"/>
-    {/* Porca da chave */}
+    
     <path
       d="M22.5 58a3 3 0 1 1-4.5-3.9"
       stroke="#1E5FAF" strokeWidth="2.5" strokeLinecap="round"
     />
   </svg>
 );
-
-/* =========================================================
-   COMPONENTE
-========================================================= */
 
 export default function LoginPage() {
   const navigate           = useNavigate();
@@ -98,8 +71,6 @@ export default function LoginPage() {
   const [form, setForm]     = useState({ login: "", senha: "" });
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
-
-  /* ── Lógica preservada integralmente ── */
 
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -121,7 +92,6 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(data));
       login(data);
 
-      /* Emoji 👋 removido do texto — padrão CEL */
       showToast(`Bem-vindo, ${data.nome}!`, "success");
 
       setTimeout(() => { navigate("/home"); }, 800);
@@ -141,7 +111,6 @@ export default function LoginPage() {
   return (
     <div className="wm-auth">
 
-      {/* ── Painel esquerdo — navy + gradiente radial CEL ── */}
       <div className="wm-auth__panel-left">
         <div style={{
           position:  "relative",
@@ -151,7 +120,6 @@ export default function LoginPage() {
           maxWidth:  380,
         }}>
 
-          {/* Logo-mark SVG — sem emoji 🔧 */}
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "var(--sp-6)" }}>
             <LogoMarkLarge />
           </div>
@@ -171,7 +139,6 @@ export default function LoginPage() {
             Encontre o profissional certo para cada serviço — com facilidade e segurança.
           </p>
 
-          {/* Indicadores visuais CEL */}
           <div style={{
             display:        "flex",
             gap:            "var(--sp-4)",
@@ -205,10 +172,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ── Painel direito — card de login CEL ── */}
       <div className="wm-auth__panel-right">
 
-        {/* Logo texto — link para landing */}
         <span
           className="wm-auth__logo"
           onClick={() => navigate("/")}
@@ -231,7 +196,6 @@ export default function LoginPage() {
             noValidate
           >
 
-            {/* ── Campo login — ícone SVG User (padrão CEL login-input) ── */}
             <div className="wm-form-group">
               <label className="wm-label" htmlFor="login-field">
                 Login
@@ -254,14 +218,12 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* ── Campo senha — ícone Lock + toggle Eye/EyeOff ── */}
             <div className="wm-form-group">
               <label className="wm-label" htmlFor="senha-field">
                 Senha
               </label>
               <div className="wm-input-wrapper">
 
-                {/* Ícone cadeado — SVG */}
                 <span className="wm-input-icon" style={{ color: "var(--clr-text-light)" }}>
                   <IcoLock />
                 </span>
@@ -279,7 +241,6 @@ export default function LoginPage() {
                   style={{ paddingRight: "var(--sp-10)" }}
                 />
 
-                {/* Toggle olho — SVG Eye / EyeOff (sem emoji) */}
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
@@ -318,7 +279,7 @@ export default function LoginPage() {
                 Esqueci minha senha
               </button>
             </div>
-            {/* ── Botão entrar ── */}
+            
             <Btn
               type="submit"
               fullWidth
@@ -330,7 +291,6 @@ export default function LoginPage() {
 
           </form>
 
-          {/* ── Link para cadastro ── */}
           <p style={{
             textAlign:  "center",
             marginTop:  "var(--sp-5)",
@@ -357,7 +317,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ── Toast de feedback ── */}
       <Toast
         open={toast.open}
         message={toast.message}

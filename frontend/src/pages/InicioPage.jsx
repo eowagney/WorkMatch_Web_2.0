@@ -1,22 +1,11 @@
-/**
- * WorkMatch — pages/InicioPage.jsx
- * CEL Design System v3.0 — landing page pública
- *
- * Lógica preservada: navigate, seções, dados, hover handlers
- * Alterações: emojis → SVG profissional, logo-mark SVG, eyebrow sem emoji
- */
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Btn } from "../components/ui";
 
-/* =========================================================
-   ÍCONES SVG — inline, Lucide-style, sem dependência externa
-========================================================= */
 
 const IcoZap = () => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
   </svg>
 );
@@ -74,25 +63,25 @@ const IcoWrench = () => (
 );
 
 /* ── Passos ── */
-const IcoSearch = () => (
+const IcoChatAI = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+    <path d="M15 8.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>
   </svg>
 );
-const IcoCalendar = () => (
+const IcoMessagesExchange = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-    <line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/>
-    <line x1="3" x2="21" y1="10" y2="10"/>
+    <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/>
+    <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>
   </svg>
 );
-const IcoCheckCircle = () => (
+const IcoBadgeCheck = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-    <polyline points="22 4 12 14.01 9 11.01"/>
+    <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
+    <path d="m9 12 2 2 4-4"/>
   </svg>
 );
 
@@ -139,10 +128,6 @@ const LogoMarkHeader = () => (
   </svg>
 );
 
-/* =========================================================
-   DADOS — emoji substituído por componente de ícone
-========================================================= */
-
 const SERVICOS = [
   { Icon: IcoZap,         label: "Eletricista"    },
   { Icon: IcoDroplets,    label: "Encanador"      },
@@ -155,21 +140,17 @@ const SERVICOS = [
 ];
 
 const PASSOS = [
-  { n: "1", Icon: IcoSearch,      title: "Encontre", desc: "Busque por especialidade ou cidade."       },
-  { n: "2", Icon: IcoCalendar,    title: "Escolha",  desc: "Selecione data e horário disponíveis."     },
-  { n: "3", Icon: IcoCheckCircle, title: "Confirme", desc: "Agendamento confirmado com um clique."     },
+  { n: "1", Icon: IcoChatAI,           title: "Encontre", desc: "Converse com nossa IA para publicar seu serviço."       },
+  { n: "2", Icon: IcoMessagesExchange, title: "Escolha",  desc: "Negocie com os profissionais pelo chat."     },
+  { n: "3", Icon: IcoBadgeCheck,       title: "Confirme", desc: "Escolha o profissional certo para seu serviço."     },
 ];
 
 const DIFERENCIAIS = [
   { Icon: IcoShieldCheck,  title: "Profissionais verificados", desc: "CPF e dados validados antes do cadastro."  },
-  { Icon: IcoClock,        title: "Agenda em tempo real",      desc: "Horários atualizados na hora."             },
+  { Icon: IcoClock,        title: "IA disponível 24 horas",      desc: "Para te ajudar a fazer uma publicação mais detalhada."             },
   { Icon: IcoSmartphone,   title: "Fácil de usar",             desc: "Pensado para ser simples para todos."      },
   { Icon: IcoMessageSquare,title: "Suporte dedicado",          desc: "Equipe pronta para ajudar."                },
 ];
-
-/* =========================================================
-   COMPONENTE
-========================================================= */
 
 export default function InicioPage() {
   const navigate = useNavigate();
@@ -226,7 +207,7 @@ export default function InicioPage() {
           </h1>
 
           <p className="wm-hero__desc">
-            Agende eletricistas, encanadores, jardineiros e muito mais —
+            Encontre eletricistas, encanadores, jardineiros e muito mais —
             com facilidade e segurança.
           </p>
 
@@ -401,12 +382,12 @@ export default function InicioPage() {
       }}>
         <h2 style={{
           fontFamily: "var(--font-display)", fontSize: "clamp(28px,5vw,48px)",
-          color: "#fff", marginBottom: "var(--sp-4)", fontWeight: 400,
+          color: "#ffffff", marginBottom: "var(--sp-4)", fontWeight: 400,
         }}>
           Pronto para começar?
         </h2>
         <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 17, marginBottom: "var(--sp-10)" }}>
-          Crie sua conta gratuitamente e agende hoje mesmo.
+          Crie sua conta gratuitamente e publique seu serviço hoje mesmo.
         </p>
         <Btn variant="accent" size="lg" onClick={() => navigate("/cadastro")}>
           Criar conta grátis

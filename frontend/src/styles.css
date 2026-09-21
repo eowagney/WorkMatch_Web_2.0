@@ -1,16 +1,7 @@
-/* =========================================================
-   WorkMatch — styles.css
-   CEL Design System v3.0 — aplicado sobre WorkMatch 2.0
-   Paleta: Navy + Blue + Yellow (sem purple — padrão CEL)
-   Fontes: DM Serif Display + DM Sans
-   ========================================================= */
-
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap');
 
-/* ── 1. DESIGN TOKENS ── */
-
 :root {
-  /* Paleta principal — CEL */
+  
   --clr-navy:         #0A2F5A;
   --clr-navy-deep:    #071f3d;
   --clr-navy-mid:     #0d3a6e;
@@ -18,19 +9,16 @@
   --clr-blue-lt:      #4FA3FF;
   --clr-blue-pale:    #EBF3FF;
 
-  /* Purple remapeado → Blue (compatibilidade com inline styles existentes) */
   --clr-purple:       #1E5FAF;
   --clr-purple-lt:    #4FA3FF;
   --clr-purple-pale:  #EBF3FF;
   --clr-purple-mid:   #0A2F5A;
 
-  /* Destaque amarelo — marca CEL */
   --clr-yellow:       #F2C94C;
   --clr-yellow-pale:  #FFF8E1;
   --clr-teal:         #0D9488;
   --clr-teal-pale:    #CCFBF1;
 
-  /* Neutros */
   --clr-bg:           #F5F7FA;
   --clr-surface:      #FFFFFF;
   --clr-border:       #E2E8F0;
@@ -39,7 +27,6 @@
   --clr-text-mid:     #475569;
   --clr-text-light:   #94A3B8;
 
-  /* Semântico */
   --clr-success:      #16A34A;
   --clr-success-bg:   #DCFCE7;
   --clr-warning:      #D97706;
@@ -49,43 +36,35 @@
   --clr-info:         #0369A1;
   --clr-info-bg:      #E0F2FE;
 
-  /* Tipografia */
   --font-display: 'DM Serif Display', Georgia, serif;
   --font-body:    'DM Sans', system-ui, -apple-system, sans-serif;
 
-  /* Espaçamento — 8pt grid */
   --sp-1:  4px;   --sp-2:  8px;   --sp-3:  12px;  --sp-4:  16px;
   --sp-5:  20px;  --sp-6:  24px;  --sp-8:  32px;  --sp-10: 40px;
   --sp-12: 48px;  --sp-16: 64px;
 
-  /* Bordas — CEL */
   --r-sm:   6px;
   --r-md:   12px;
   --r-lg:   18px;
   --r-xl:   24px;
   --r-full: 9999px;
 
-  /* Sombras — CEL */
   --shadow-xs:     0 1px 2px rgba(10,47,90,0.05);
   --shadow-sm:     0 2px 8px rgba(10,47,90,0.07), 0 1px 2px rgba(10,47,90,0.04);
   --shadow-md:     0 4px 16px rgba(10,47,90,0.09), 0 2px 4px rgba(10,47,90,0.05);
   --shadow-lg:     0 10px 32px rgba(10,47,90,0.12), 0 4px 8px rgba(10,47,90,0.06);
   --shadow-blue:   0 4px 16px rgba(30,95,175,0.3);
-  /* Alias de compatibilidade */
+  
   --shadow-purple: 0 4px 16px rgba(30,95,175,0.3);
 
-  /* Transições — CEL */
   --t-fast: 150ms ease;
   --t-base: 220ms ease;
   --t-slow: 380ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Layout */
-  --header-h:    64px;
+  --header-h:    88px;
   --container:   1200px;
   --container-p: var(--sp-6);
 }
-
-/* ── 2. RESET — CEL base global ── */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
@@ -104,14 +83,10 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 a { text-decoration: none; color: inherit; }
 ul, ol { list-style: none; }
 
-/* ── 3. SCROLLBAR — CEL ── */
-
 ::-webkit-scrollbar       { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--clr-border-mid); border-radius: var(--r-full); }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* ── 4. HEADER PÚBLICO (landing / auth) — CEL navy ── */
 
 .wm-header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -124,28 +99,29 @@ ul, ol { list-style: none; }
   height: 100%; max-width: var(--container);
   margin: 0 auto; padding: 0 var(--container-p);
 }
-.wm-header__brand { display: flex; align-items: center; gap: var(--sp-3); flex-shrink: 0; }
+.wm-header__brand { display: flex; align-items: center; gap: var(--sp-4); flex-shrink: 0; }
 .wm-header__logo-mark {
-  width: 36px; height: 36px; border-radius: var(--r-sm);
+  width: 48px; height: 48px; border-radius: var(--r-sm);
   background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
+.wm-header__logo-mark svg { width: 26px; height: 26px; }
 .wm-header__title-group { display: flex; flex-direction: column; gap: 0; }
 .wm-header__title {
-  font-family: var(--font-display); font-size: 1.15rem;
+  font-family: var(--font-display); font-size: 1.5rem;
   color: #fff; letter-spacing: -0.01em; line-height: 1.2;
 }
 .wm-header__subtitle {
-  font-size: 0.65rem; color: rgba(255,255,255,0.45);
+  font-size: 0.78rem; color: rgba(255,255,255,0.45);
   letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600;
   opacity: 0.55;
 }
 .wm-header__nav { display: flex; align-items: center; gap: var(--sp-1); margin-left: auto; }
 .wm-nav-link {
   display: flex; align-items: center; gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-4); border-radius: var(--r-full);
-  font-size: 0.875rem; font-weight: 500; color: rgba(255,255,255,0.6);
+  padding: var(--sp-3) var(--sp-6); border-radius: var(--r-full);
+  font-size: 1rem; font-weight: 500; color: rgba(255,255,255,0.6);
   cursor: pointer; border: none; background: transparent;
   transition: color var(--t-fast), background var(--t-fast);
   font-family: var(--font-body);
@@ -162,8 +138,6 @@ ul, ol { list-style: none; }
   transition: transform var(--t-fast); font-family: var(--font-body);
 }
 .wm-header__avatar:hover { transform: scale(1.05); }
-
-/* ── 5. TOPBAR — páginas internas — CEL navy ── */
 
 .wm-topbar {
   position: fixed; top: 0; left: 0; right: 0;
@@ -194,7 +168,6 @@ ul, ol { list-style: none; }
   margin-top: 1px; opacity: 0.7;
 }
 
-/* Botão hamburger — integrado ao header navy */
 .wm-menu-btn {
   position: fixed; top: 12px; left: 12px; z-index: 200;
   width: 40px; height: 40px; border-radius: var(--r-sm);
@@ -206,8 +179,6 @@ ul, ol { list-style: none; }
 }
 .wm-menu-btn:hover { background: rgba(255,255,255,0.16); }
 .wm-menu-btn span { display: block; width: 18px; height: 1.5px; background: rgba(255,255,255,0.85); border-radius: var(--r-full); transition: transform var(--t-base), opacity var(--t-base); }
-
-/* ── 6. DRAWER / MENU LATERAL ── */
 
 .wm-drawer-overlay {
   position: fixed; inset: 0; z-index: 300;
@@ -280,19 +251,13 @@ ul, ol { list-style: none; }
 }
 .wm-drawer__logout:hover { background: var(--clr-danger-bg); }
 
-/* ── 7. LAYOUT PRINCIPAL ── */
-
 .wm-main      { padding-top: calc(var(--header-h) + var(--sp-8)); padding-bottom: var(--sp-16); min-height: 100vh; }
 .wm-container { max-width: var(--container); margin: 0 auto; padding: 0 var(--container-p); display: flex; flex-direction: column; gap: var(--sp-6); }
-
-/* ── 8. PAGE HERO — CEL ── */
 
 .wm-page-hero          { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap; }
 .wm-page-hero__eyebrow { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--clr-blue); margin-bottom: var(--sp-1); }
 .wm-page-hero__title   { font-family: var(--font-display); font-size: 2rem; font-weight: 400; color: var(--clr-navy); letter-spacing: -0.02em; line-height: 1.15; }
 .wm-page-hero__actions { display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap; }
-
-/* ── 9. CARDS — CEL (18px radius) ── */
 
 .wm-card {
   background: var(--clr-surface); border-radius: var(--r-lg);
@@ -301,7 +266,7 @@ ul, ol { list-style: none; }
 }
 .wm-card:hover                { box-shadow: var(--shadow-md); }
 .wm-card--blue                { border-top: 3px solid var(--clr-blue); }
-.wm-card--purple              { border-top: 3px solid var(--clr-blue); }   /* alias blue */
+.wm-card--purple              { border-top: 3px solid var(--clr-blue); }   
 .wm-card--teal                { border-top: 3px solid var(--clr-teal); }
 .wm-card--yellow              { border-top: 3px solid var(--clr-yellow); }
 .wm-card--accent              {
@@ -321,8 +286,6 @@ ul, ol { list-style: none; }
 .wm-card--clickable { cursor: pointer; transition: box-shadow var(--t-base), transform var(--t-base); }
 .wm-card--clickable:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 
-/* ── 10. TABELA — CEL ── */
-
 .wm-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--r-md); }
 .wm-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .wm-table th {
@@ -335,8 +298,6 @@ ul, ol { list-style: none; }
 .wm-table tr:last-child td { border-bottom: none; }
 .wm-table tbody tr { transition: background var(--t-fast); }
 .wm-table tbody tr:hover { background: var(--clr-blue-pale); }
-
-/* ── 11. BOTÕES — CEL (pill, blue gradient) ── */
 
 .wm-btn {
   display: inline-flex; align-items: center; justify-content: center;
@@ -356,7 +317,6 @@ ul, ol { list-style: none; }
 .wm-btn:disabled      { opacity: 0.45; cursor: not-allowed; transform: none; }
 .wm-btn:focus-visible { outline: 3px solid var(--clr-blue-lt); outline-offset: 2px; }
 
-/* Variantes */
 .wm-btn--primary   { background: linear-gradient(135deg, var(--clr-blue) 0%, #1a52a0 100%); color: #fff; box-shadow: 0 2px 8px rgba(30,95,175,0.35); }
 .wm-btn--primary:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(30,95,175,0.45); }
 .wm-btn--secondary { background: var(--clr-surface); color: var(--clr-text); border: 1.5px solid var(--clr-border); box-shadow: var(--shadow-xs); }
@@ -368,15 +328,11 @@ ul, ol { list-style: none; }
 .wm-btn--accent    { background: var(--clr-yellow); color: #3d2800; box-shadow: 0 2px 8px rgba(242,201,76,0.4); }
 .wm-btn--accent:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(242,201,76,0.5); }
 
-/* Tamanhos */
 .wm-btn--sm   { height: 32px; padding: 0 var(--sp-4); font-size: 0.8rem; }
 .wm-btn--lg   { height: 48px; padding: 0 var(--sp-8); font-size: 1rem; }
 .wm-btn--full { width: 100%; }
 
-/* Spinner inline no botão */
 .wm-btn__spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: var(--r-full); animation: wmSpin 0.7s linear infinite; flex-shrink: 0; }
-
-/* ── 12. FORMULÁRIOS — CEL ── */
 
 .wm-form-group  { display: flex; flex-direction: column; gap: var(--sp-2); }
 .wm-label       { font-size: 0.82rem; font-weight: 600; color: var(--clr-text-mid); letter-spacing: 0.01em; }
@@ -395,7 +351,6 @@ ul, ol { list-style: none; }
 .wm-input--error        { border-color: var(--clr-danger) !important; box-shadow: 0 0 0 3px rgba(220,38,38,0.12) !important; }
 textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) var(--sp-4); resize: vertical; }
 
-/* Select estilizado */
 .wm-input--select {
   cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
@@ -413,8 +368,6 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-form-col-full  { grid-column: 1 / -1; }
 .wm-form-actions   { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-3); padding-top: var(--sp-5); border-top: 1px solid var(--clr-border); margin-top: var(--sp-2); }
 
-/* ── 13. KPI GRID — CEL ── */
-
 .wm-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-4); }
 .wm-kpi {
   border-radius: var(--r-lg); padding: var(--sp-5) var(--sp-6);
@@ -425,7 +378,7 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-kpi::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%); pointer-events: none; }
 .wm-kpi:hover   { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .wm-kpi--blue   { background: linear-gradient(135deg, var(--clr-blue)      0%, #1a4e8f 100%); color: #fff; }
-.wm-kpi--purple { background: linear-gradient(135deg, var(--clr-navy-deep)  0%, var(--clr-navy-mid) 100%); color: #fff; } /* alias navy */
+.wm-kpi--purple { background: linear-gradient(135deg, var(--clr-navy-deep)  0%, var(--clr-navy-mid) 100%); color: #fff; } 
 .wm-kpi--teal   { background: linear-gradient(135deg, var(--clr-teal)       0%, #0f766e 100%); color: #fff; }
 .wm-kpi--navy   { background: linear-gradient(135deg, var(--clr-navy-deep)  0%, var(--clr-navy-mid) 100%); color: #fff; }
 .wm-kpi--yellow { background: linear-gradient(135deg, #c99a0e 0%, var(--clr-yellow) 100%); color: #3d2800; }
@@ -435,21 +388,17 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-kpi__value  { font-family: var(--font-display); font-size: 2.2rem; line-height: 1; letter-spacing: -0.02em; }
 .wm-kpi__sub    { font-size: 0.72rem; font-weight: 500; opacity: 0.65; }
 
-/* ── 14. BADGE — CEL ── */
-
 .wm-badge         { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--r-full); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
 .wm-badge--success { background: var(--clr-success-bg); color: var(--clr-success); }
 .wm-badge--warning { background: var(--clr-warning-bg); color: var(--clr-warning); }
 .wm-badge--danger  { background: var(--clr-danger-bg);  color: var(--clr-danger); }
 .wm-badge--info    { background: var(--clr-info-bg);    color: var(--clr-info); }
-.wm-badge--purple  { background: var(--clr-blue-pale);  color: var(--clr-blue); }   /* alias blue */
+.wm-badge--purple  { background: var(--clr-blue-pale);  color: var(--clr-blue); }   
 .wm-badge--blue    { background: var(--clr-blue-pale);  color: var(--clr-blue); }
 .wm-badge--neutral { background: var(--clr-border);     color: var(--clr-text-mid); }
 .wm-badge--gray    { background: var(--clr-border);     color: var(--clr-text-mid); }
 .wm-badge--yellow  { background: var(--clr-yellow-pale); color: #92660B; }
 .wm-badge--green   { background: var(--clr-success-bg); color: var(--clr-success); }
-
-/* ── 14b. ABAS DE FILTRO (Meus Serviços) — CEL ── */
 
 .wm-tabs {
   display: flex; gap: var(--sp-2); flex-wrap: wrap;
@@ -464,8 +413,6 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 }
 .wm-tab:hover        { border-color: var(--clr-blue); color: var(--clr-blue); }
 .wm-tab--active      { border-color: transparent; background: var(--clr-blue); color: #fff; box-shadow: var(--shadow-blue, var(--shadow-sm)); }
-
-/* ── 14c. GRID E CARD DE SERVIÇO — CEL ── */
 
 .wm-card-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -483,15 +430,11 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-service-card__specialty { color: var(--clr-text-mid); font-size: 0.88rem; margin-bottom: var(--sp-4); }
 .wm-service-card__actions   { display: flex; gap: var(--sp-2); flex-wrap: wrap; padding-top: var(--sp-3); border-top: 1px solid var(--clr-border); }
 
-/* ── 14d. ESTADOS VAZIOS / TEXTO SECUNDÁRIO — CEL ── */
-
 .wm-empty-state {
   text-align: center; color: var(--clr-text-mid); font-size: 0.95rem;
   padding: var(--sp-12) var(--sp-6);
 }
 .wm-text-muted { color: var(--clr-text-mid); }
-
-/* ── 15. SKELETON — CEL shimmer ── */
 
 @keyframes wmShimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
 .wm-skeleton {
@@ -507,23 +450,17 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-skeleton-item    { display: flex; align-items: center; gap: var(--sp-3); }
 .wm-skeleton-item__lines { flex: 1; display: flex; flex-direction: column; gap: var(--sp-2); }
 
-/* ── 16. EMPTY STATE ── */
-
 .wm-empty        { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-4); padding: var(--sp-16) var(--sp-8); text-align: center; }
 .wm-empty__icon  { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: var(--r-full); background: var(--clr-blue-pale); color: var(--clr-blue); margin-bottom: var(--sp-2); }
 .wm-empty__title { font-size: 1.05rem; font-weight: 700; color: var(--clr-text-mid); }
 .wm-empty__desc  { font-size: 0.875rem; color: var(--clr-text-light); max-width: 300px; line-height: 1.6; }
-
-/* ── 17. ALERT — CEL (border-left 3px) ── */
 
 .wm-alert         { display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4) var(--sp-5); border-radius: var(--r-md); font-size: 0.875rem; line-height: 1.5; }
 .wm-alert--info    { background: var(--clr-info-bg);     color: var(--clr-info);    border-left: 3px solid var(--clr-info); }
 .wm-alert--warning { background: var(--clr-warning-bg);  color: var(--clr-warning); border-left: 3px solid var(--clr-warning); }
 .wm-alert--success { background: var(--clr-success-bg);  color: var(--clr-success); border-left: 3px solid var(--clr-success); }
 .wm-alert--danger  { background: var(--clr-danger-bg);   color: var(--clr-danger);  border-left: 3px solid var(--clr-danger); }
-.wm-alert--purple  { background: var(--clr-blue-pale);   color: var(--clr-blue);    border-left: 3px solid var(--clr-blue); } /* alias blue */
-
-/* ── 18. TOAST — CEL (fundo navy, canto inferior direito) ── */
+.wm-alert--purple  { background: var(--clr-blue-pale);   color: var(--clr-blue);    border-left: 3px solid var(--clr-blue); } 
 
 .wm-toast-container { position: fixed; bottom: var(--sp-6); right: var(--sp-6); z-index: 9999; display: flex; flex-direction: column; gap: var(--sp-3); pointer-events: none; }
 .wm-toast {
@@ -550,8 +487,6 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 }
 .wm-toast__close:hover { background: rgba(255,255,255,0.22); color: #fff; }
 
-/* ── 19. MODAL — CEL ── */
-
 .wm-modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(7,31,61,0.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: var(--sp-4); animation: wmFadeIn 200ms ease both; }
 .wm-modal         { background: var(--clr-surface); border-radius: var(--r-xl); box-shadow: var(--shadow-lg); width: 100%; max-width: 480px; animation: wmSlideUp var(--t-slow) both; overflow: hidden; }
 .wm-modal--sm     { max-width: 380px; }
@@ -561,26 +496,20 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-modal__body   { padding: var(--sp-6); }
 .wm-modal__footer { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-3); padding: var(--sp-5) var(--sp-6); border-top: 1px solid var(--clr-border); }
 
-/* ── 20. AVATAR — CEL ── */
-
 .wm-avatar       { border-radius: var(--r-full); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; flex-shrink: 0; font-family: var(--font-body); }
 .wm-avatar--sm   { width: 36px;  height: 36px;  font-size: 14px; }
 .wm-avatar--md   { width: 48px;  height: 48px;  font-size: 18px; }
 .wm-avatar--lg   { width: 72px;  height: 72px;  font-size: 28px; }
 .wm-avatar--xl   { width: 88px;  height: 88px;  font-size: 34px; }
 .wm-avatar--blue   { background: linear-gradient(135deg, var(--clr-blue),       #1a4e8f); }
-.wm-avatar--purple { background: linear-gradient(135deg, var(--clr-navy-deep),   var(--clr-blue)); } /* alias */
+.wm-avatar--purple { background: linear-gradient(135deg, var(--clr-navy-deep),   var(--clr-blue)); } 
 .wm-avatar--teal   { background: linear-gradient(135deg, var(--clr-teal),        #0f766e); }
 .wm-avatar--navy   { background: linear-gradient(135deg, var(--clr-navy-deep),   var(--clr-navy-mid)); }
-
-/* ── 21. SPINNER — CEL (azul claro) ── */
 
 .wm-spinner           { border-radius: var(--r-full); border-style: solid; border-color: rgba(30,95,175,0.15); border-top-color: var(--clr-blue-lt); animation: wmSpin 0.7s linear infinite; }
 .wm-spinner--sm       { width: 20px; height: 20px; border-width: 2px; }
 .wm-spinner--md       { width: 36px; height: 36px; border-width: 3px; }
 .wm-spinner--lg       { width: 52px; height: 52px; border-width: 4px; }
-
-/* ── 22. BUSCA E FILTROS — CEL ── */
 
 .wm-search-wrapper { position: relative; }
 .wm-search-icon    { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--clr-text-light); pointer-events: none; }
@@ -595,8 +524,6 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 }
 .wm-chip:hover      { border-color: var(--clr-blue); color: var(--clr-blue); }
 .wm-chip--active    { border-color: transparent; background: var(--clr-blue); color: #fff; box-shadow: var(--shadow-blue); }
-
-/* ── 23. HERO — landing page ── */
 
 .wm-hero {
   min-height: 100vh;
@@ -626,27 +553,23 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 }
 .wm-hero__actions { display: flex; gap: var(--sp-4); justify-content: center; flex-wrap: wrap; }
 
-/* Grid de serviços na landing */
 .wm-services-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: var(--sp-3);
 }
 .wm-service-chip {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  background: var(--clr-blue-pale); border: 1px solid var(--clr-blue-pale);
   border-radius: var(--r-md); padding: var(--sp-4) var(--sp-3);
-  text-align: center; cursor: pointer; color: rgba(255,255,255,0.8);
+  text-align: center; cursor: pointer; color: var(--clr-blue);
   font-size: 0.82rem; font-weight: 600;
   transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
   display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
 }
-.wm-service-chip:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); color: #fff; transform: translateY(-2px); }
+.wm-service-chip:hover { background: var(--clr-blue); border-color: var(--clr-blue); color: #fff; transform: translateY(-2px); }
 .wm-service-chip__icon { display: flex; align-items: center; justify-content: center; }
 
-/* Seções da landing (fundo claro) */
 .wm-section { padding: var(--sp-16) var(--container-p); }
 .wm-section--alt { background: var(--clr-bg); }
-
-/* ── 24. AUTH — CEL login card ── */
 
 .wm-auth { min-height: 100vh; display: flex; font-family: var(--font-body); }
 .wm-auth__panel-left {
@@ -659,17 +582,18 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
   padding: var(--sp-12); position: relative; overflow: hidden;
 }
 .wm-auth__panel-right {
-  width: min(100%, 480px); display: flex; flex-direction: column;
+  flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: var(--sp-12) var(--sp-8); background: var(--clr-bg);
 }
+.wm-auth__panel-right > * { width: 100%; max-width: 860px; }
 .wm-auth__logo  { font-family: var(--font-display); font-size: 1.6rem; cursor: pointer; color: var(--clr-navy); margin-bottom: var(--sp-8); display: block; text-align: center; }
 .wm-auth__logo span { color: var(--clr-blue); }
 .wm-auth__card {
   background: var(--clr-surface); border-radius: var(--r-xl);
   box-shadow: var(--shadow-lg), 0 0 0 1px rgba(30,95,175,0.08);
   border: 1px solid var(--clr-border);
-  padding: var(--sp-10) var(--sp-8);
+  padding: 80px 64px;
   width: 100%; position: relative; overflow: hidden;
 }
 .wm-auth__card::before {
@@ -679,12 +603,15 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-auth__heading { font-family: var(--font-display); font-size: 1.6rem; color: var(--clr-navy); margin-bottom: var(--sp-2); text-align: center; }
 .wm-auth__sub     { font-size: 0.875rem; color: var(--clr-text-light); text-align: center; margin-bottom: var(--sp-6); }
 
-/* Steps de cadastro */
+.wm-auth__card .wm-input        { height: 64px; font-size: 1.2rem; }
+.wm-auth__card .wm-label        { font-size: 1.15rem; }
+.wm-auth__card .wm-btn          { height: 64px; font-size: 1.2rem; }
+.wm-auth__heading                { font-size: 2.8rem; }
+.wm-auth__sub                    { font-size: 1.2rem; margin-bottom: var(--sp-8); }
+
 .wm-steps        { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-6); }
 .wm-step         { flex: 1; height: 4px; border-radius: var(--r-full); background: var(--clr-border); transition: background var(--t-base); }
 .wm-step--active { background: var(--clr-blue); }
-
-/* ── 25. CARD DE PROFISSIONAL ── */
 
 .wm-prof-card       { background: var(--clr-surface); border-radius: var(--r-lg); border: 1px solid var(--clr-border); box-shadow: var(--shadow-sm); overflow: hidden; cursor: pointer; transition: box-shadow var(--t-base), transform var(--t-base); }
 .wm-prof-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
@@ -695,28 +622,20 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-prof-card__loc     { display: flex; align-items: center; gap: var(--sp-2); font-size: 0.82rem; color: var(--clr-text-light); margin-bottom: var(--sp-4); }
 .wm-prof-card__footer  { display: flex; align-items: center; justify-content: space-between; }
 
-/* ── 26. ESTRELAS ── */
-
 .wm-stars      { display: inline-flex; gap: 2px; align-items: center; }
 .wm-star       { font-size: 13px; color: var(--clr-yellow); }
 .wm-star--empty { color: var(--clr-border-mid); }
 .wm-stars__val { font-size: 13px; font-weight: 700; color: var(--clr-text); margin-left: 4px; }
-
-/* ── 27. INFO ROW ── */
 
 .wm-info-row          { display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-3) 0; border-bottom: 1px solid var(--clr-border); }
 .wm-info-row:last-child { border-bottom: none; }
 .wm-info-row__icon    { flex-shrink: 0; margin-top: 2px; color: var(--clr-text-light); }
 .wm-info-row__label   { font-size: 0.72rem; color: var(--clr-text-light); font-weight: 600; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
 .wm-info-row__value   { font-size: 0.9rem; color: var(--clr-text); font-weight: 600; }
-/* Alias legado com emoji */
+
 .wm-info-row__emoji   { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 
-/* ── 28. DIVIDER ── */
-
 .wm-divider { border: none; border-top: 1px solid var(--clr-border); margin: var(--sp-4) 0; }
-
-/* ── 29. AGENDAMENTO / SERVIÇO CARD ── */
 
 .wm-booking-card       { background: var(--clr-surface); border-radius: var(--r-lg); border: 1px solid var(--clr-border); border-left: 4px solid var(--clr-blue); box-shadow: var(--shadow-sm); padding: var(--sp-5); transition: box-shadow var(--t-base); }
 .wm-booking-card:hover { box-shadow: var(--shadow-md); }
@@ -730,8 +649,6 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-booking-detail__label { font-size: 0.72rem; color: var(--clr-text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 1px; }
 .wm-booking-detail__val   { font-size: 0.9rem; color: var(--clr-text); font-weight: 600; }
 
-/* ── 30. CHAT ── */
-
 .wm-chat { display: flex; flex-direction: column; height: calc(100vh - var(--header-h) - var(--sp-8) - var(--sp-16)); max-height: 700px; }
 .wm-chat__messages { flex: 1; overflow-y: auto; padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 .wm-chat__bubble { max-width: 75%; padding: var(--sp-3) var(--sp-4); border-radius: var(--r-lg); font-size: 0.9rem; line-height: 1.5; word-break: break-word; }
@@ -740,8 +657,6 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-chat__input-area { display: flex; gap: var(--sp-3); padding: var(--sp-4); border-top: 1px solid var(--clr-border); background: var(--clr-surface); }
 .wm-chat__time { font-size: 0.7rem; color: var(--clr-text-light); margin-top: 2px; }
 
-/* ── 31. LOADING OVERLAY — CEL ── */
-
 .wm-loading-overlay {
   position: fixed; inset: 0;
   background: rgba(5,15,30,0.5);
@@ -749,8 +664,6 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
   z-index: 800;
   display: flex; align-items: center; justify-content: center;
 }
-
-/* ── 32. ANIMAÇÕES — CEL ── */
 
 @keyframes wmFadeIn   { from { opacity: 0; } to { opacity: 1; } }
 @keyframes wmFadeUp   { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
@@ -768,8 +681,6 @@ textarea.wm-input       { height: auto; min-height: 96px; padding: var(--sp-3) v
 .wm-delay-3 { animation-delay: 0.15s; }
 .wm-delay-4 { animation-delay: 0.20s; }
 .wm-delay-5 { animation-delay: 0.25s; }
-
-/* ── 33. RESPONSIVIDADE — CEL ── */
 
 @media (max-width: 1024px) {
   .wm-kpi-grid    { grid-template-columns: repeat(2, 1fr); }
