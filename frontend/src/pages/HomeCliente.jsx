@@ -94,10 +94,11 @@ const COMO_FUNCIONA = [
 ];
 
 const STATUS_CARDS = [
-  { label: "Publicados",   Icon: IcoClipboard, color: "var(--clr-blue)",    statuses: ["PUBLICADO"],            path: "/meus-servicos" },
-  { label: "Negociando",   Icon: IcoMessage,   color: "var(--clr-warning)", statuses: ["NEGOCIANDO"],           path: "/meus-servicos" },
-  { label: "Em andamento", Icon: IcoSettings,  color: "var(--clr-teal)",    statuses: ["CONTRATADO","ANDAMENTO"],path: "/meus-servicos" },
-  { label: "Concluídos",   Icon: IcoCheck,     color: "var(--clr-success)", statuses: ["FINALIZADO"],           path: "/meus-servicos" },
+  { label: "Publicados",   Icon: IcoClipboard, color: "var(--clr-blue)",    statuses: ["PUBLICADO"],  path: "/meus-servicos", aba: 0 },
+  { label: "Negociando",   Icon: IcoMessage,   color: "var(--clr-warning)", statuses: ["NEGOCIANDO"], path: "/meus-servicos", aba: 1 },
+  { label: "Contratado",   Icon: IcoHandshake, color: "var(--clr-teal)",    statuses: ["CONTRATADO"], path: "/meus-servicos", aba: 2 },
+  { label: "Em andamento", Icon: IcoSettings,  color: "var(--clr-teal)",    statuses: ["ANDAMENTO"],  path: "/meus-servicos", aba: 3 },
+  { label: "Concluídos",   Icon: IcoCheck,     color: "var(--clr-success)", statuses: ["FINALIZADO"], path: "/meus-servicos", aba: 4 },
 ];
 
 /* =========================================================
@@ -169,10 +170,10 @@ export default function HomeCliente() {
     }
   }
 
-  function handleStatusKeyDown(e, path) {
+  function handleStatusKeyDown(e, path, aba) {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      navigate(path);
+      navigate(`${path}?aba=${aba}`);
     }
   }
 
@@ -309,16 +310,16 @@ export default function HomeCliente() {
             gap: "var(--sp-4)",
           }}>
             {carregando
-              ? Array.from({ length: 4 }).map((_, i) => <CounterSkeleton key={i} />)
-              : STATUS_CARDS.map(({ label, Icon, color, path }, i) => (
+              ? Array.from({ length: 5 }).map((_, i) => <CounterSkeleton key={i} />)
+              : STATUS_CARDS.map(({ label, Icon, color, path, aba }, i) => (
                 <div
                   key={label}
                   className={`wm-animate-fadeUp wm-delay-${i + 1}`}
                   role="button"
                   tabIndex={0}
                   aria-label={label}
-                  onClick={() => navigate(path)}
-                  onKeyDown={(e) => handleStatusKeyDown(e, path)}
+                  onClick={() => navigate(`${path}?aba=${aba}`)}
+                  onKeyDown={(e) => handleStatusKeyDown(e, path, aba)}
                   style={{
                     background:   "var(--clr-surface)",
                     borderRadius: "var(--r-lg)",

@@ -1,5 +1,6 @@
 package com.workmatch.service;
 
+import com.workmatch.dto.AtualizarUsuarioDTO;
 import com.workmatch.dto.UsuarioDTO;
 import com.workmatch.keycloak.KeycloakIntegrationException;
 import com.workmatch.keycloak.KeycloakRegistrationService;
@@ -7,6 +8,8 @@ import com.workmatch.model.Profissional;
 import com.workmatch.model.Usuario;
 import com.workmatch.repository.ProfissionalRepository;
 import com.workmatch.repository.UsuarioRepository;
+
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,6 +71,23 @@ public class UsuarioService {
                     "Falha ao salvar no banco de dados: " + e.getMessage());
         }
     }
+
+    @Transactional
+        public Usuario atualizar(UUID id, AtualizarUsuarioDTO dto) {
+            Usuario u = buscarPorId(id);
+
+            boolean mudouEmail = !dto.email().equalsIgnoreCase(u.getEmail());
+            if (mudouEmail && (usuarioRepo.existsByEmail(dto.email()) || profissionalRepo.existsByEmail(dto.email())))
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
+
+            u.setNome(dto.nome());
+            u.setEmail(dto.email());
+            u.setTelefone(limpar(dto.telefone()));
+            u.setEndereco(dto.endereco());
+            u.setCidade(dto.cidade());
+            u.setEstado(dto.estado());
+            return usuarioRepo.save(u);
+        }
 
     // ── CRUD ──────────────────────────────────────────────────────────────────
 

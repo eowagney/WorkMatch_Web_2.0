@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Btn, Card, CardBody, Badge, Spinner, EmptyState, Stars } from "../components/ui.jsx";
 import { useToast } from "../hooks/useToast.js";
+import { useAvancarStatusServico } from "../hooks/UseAvancarStatusServico.jsx";
 import api from "../services/api.js";
 
 /* =========================================================
@@ -154,7 +155,7 @@ export default function CandidatosServico() {
   const [servico,     setServico]     = useState(null);
   const [candidatos,  setCandidatos]  = useState([]);
   const [carregando,  setCarregando]  = useState(true);
-  const [contratando, setContratando] = useState(null);
+  const { avancar, avancandoId }      = useAvancarStatusServico();
 
   const carregar = useCallback(async () => {
     setCarregando(true);
@@ -174,17 +175,17 @@ export default function CandidatosServico() {
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  const contratar = async (profissionalId) => {
-    setContratando(profissionalId);
-    try {
-      await api.patch(`/api/servicos/${servicoId}/avancar?profissionalId=${profissionalId}`);
-      showToast("Profissional selecionado! Negociação iniciada.", "success");
-      navigate(`/chat/${servicoId}/${profissionalId}`);
-    } catch (e) {
-      showToast(e?.response?.data?.message || "Erro ao selecionar profissional.", "danger");
-    } finally {
-      setContratando(null);
-    }
+  // Aba do serviço em Meus Serviços: 0-Publicados 1-Negociando 2-Contratado 3-Em andamento 4-Concluídos 5-Arquivados
+  const ehNegociando = servico?.status === "NEGOCIANDO";
+
+  const avancarStatus = (profissionalId) => {
+    avancar(servicoId, profissionalId, {
+      mensagemSucesso: ehNegociando ? "Profissional contratado!" : "Negociação iniciada!",
+      mensagemErroPadrao: "Erro ao atualizar status do serviço.",
+      variantSucesso: "success",
+      variantErro: "danger",
+      onSucesso: () => navigate(`/meus-servicos?aba=${ehNegociando ? 2 : 1}`),
+    });
   };
 
   return (
@@ -202,7 +203,7 @@ export default function CandidatosServico() {
           Candidatos
         </h1>
         <p style={{ margin: "2px 0 0", color: "rgba(255,255,255,0.7)", fontSize: "0.82rem" }}>
-          Selecione o profissional para iniciar a negociação
+          {ehNegociando ? "Selecione o profissional para contratar" : "Selecione o profissional para iniciar a negociação"}
         </p>
       </header>
 
@@ -266,16 +267,16 @@ export default function CandidatosServico() {
                             Ver perfil
                           </Btn>
                           <Btn variant="secondary" size="sm" onClick={() => navigate(`/chat/${servicoId}/${c.profissionalId}`)}>
-                            <IconMessage /> &nbsp;Conversar
+                            <IconMessage /> &nbsp;Chat
                           </Btn>
                           <Btn
                             variant="primary" size="sm"
-                            onClick={() => contratar(c.profissionalId)}
-                            disabled={contratando === c.profissionalId}
+                            onClick={() => avancarStatus(c.profissionalId)}
+                            disabled={avancandoId === c.profissionalId}
                           >
-                            {contratando === c.profissionalId
+                            {avancandoId === c.profissionalId
                               ? <Spinner size="sm" center={false} />
-                              : <><IconCheck /> &nbsp;Selecionar</>
+                              : <><IconCheck /> &nbsp;{ehNegociando ? "Contratar" : "Negociar"}</>
                             }
                           </Btn>
                         </div>

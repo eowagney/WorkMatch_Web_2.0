@@ -1,5 +1,3 @@
-
-
 import React, { useState } from "react";
 import { useNavigate }      from "react-router-dom";
 import { Btn, Input }       from "../components/ui";
@@ -86,14 +84,14 @@ const ESTADOS = [
 const INITIAL_USUARIO = {
   nome: "", cpf: "", email: "", telefone: "",
   dataNascimento: "", cep: "", endereco: "",
-  numero: "", complemento: "", cidade: "",
+  numero: "", semNumero: false, complemento: "", cidade: "",
   estado: "", login: "", senha: "", role: "CLIENTE",
 };
 
 const INITIAL_PROFISSIONAL = {
   nome: "", cpf: "", email: "", telefone: "",
   dataNascimento: "", cep: "", endereco: "",
-  numero: "", complemento: "", cidade: "",
+  numero: "", semNumero: false, complemento: "", cidade: "",
   estado: "", especialidade: "", descricao: "",
   experienciaAnos: "", login: "", senha: "",
 };
@@ -190,6 +188,7 @@ export default function CadastroPage() {
     let { name, value } = e.target;
     if (name === "cpf")      value = fmtCpf(value);
     if (name === "telefone") value = fmtTel(value);
+    if (name === "login")    value = value.replace(/\s+/g, "").toLowerCase();
     if (name === "cep") {
       value = fmtCep(value);
       if (value.replace(/\D/g, "").length === 8) buscarCep(value);
@@ -215,6 +214,12 @@ export default function CadastroPage() {
 
   function field(name, label, extra = {}) {
     return { label, name, value: form[name] || "", onChange: handleChange, error: errors[name], ...extra };
+  }
+
+  function handleToggleSemNumero(e) {
+    const checked = e.target.checked;
+    setForm((prev) => ({ ...prev, semNumero: checked, numero: checked ? "S/N" : "" }));
+    setErrors((prev) => ({ ...prev, numero: "" }));
   }
 
   async function handleStep1Next() {
@@ -393,7 +398,19 @@ export default function CadastroPage() {
                     /* loadingCep não altera lógica, apenas informativo */
                   />
                   <Input {...field("endereco",     "Endereço")}  placeholder="Rua, Avenida..." />
-                  <Input {...field("numero",       "Número")}    placeholder="Ex.: 123" />
+
+                  <div className="wm-form-group">
+                    <Input {...field("numero", "Número")} placeholder="Ex.: 123"
+                      disabled={form.semNumero} />
+                    <label style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      fontSize: 13, color: "var(--clr-text-mid)", marginTop: "var(--sp-2)", cursor: "pointer",
+                    }}>
+                      <input type="checkbox" checked={!!form.semNumero} onChange={handleToggleSemNumero} />
+                      Endereço sem número (S/N)
+                    </label>
+                  </div>
+
                   <Input {...field("complemento",  "Complemento")} placeholder="Apto, Sala..." />
                   <Input {...field("cidade",       "Cidade")}    placeholder="Sua cidade" />
 

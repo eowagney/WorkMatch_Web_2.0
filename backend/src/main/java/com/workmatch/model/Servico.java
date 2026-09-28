@@ -50,6 +50,12 @@ public class Servico {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Profissional profissional;
 
+    @Column(name = "codigo_inicio", length = 6)
+    private String codigoInicio;
+
+    @Column(name = "codigo_inicio_expira_em")
+    private LocalDateTime codigoInicioExpiraEm;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 

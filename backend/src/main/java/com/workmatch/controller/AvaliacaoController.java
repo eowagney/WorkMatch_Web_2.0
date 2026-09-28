@@ -32,6 +32,13 @@ public class AvaliacaoController {
         return ResponseEntity.ok(service.listarPorProfissional(profissionalId));
     }
 
+    // Retorna as avaliações completas (com nota) feitas por este cliente
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<AvaliacaoResponse>> listarPorCliente(
+            @PathVariable UUID clienteId) {
+        return ResponseEntity.ok(service.listarPorCliente(clienteId));
+    }
+
     // Retorna lista de servicoIds já avaliados por este cliente
     @GetMapping("/cliente/{clienteId}/avaliados")
     public ResponseEntity<List<UUID>> servicosAvaliados(@PathVariable UUID clienteId) {

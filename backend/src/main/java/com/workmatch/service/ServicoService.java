@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +34,9 @@ public class ServicoService {
     private final ProfissionalRepository profissionalRepository;
     private final MapperService mapper;
     private final CandidatureRepository candidatureRepository;
+
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final int CODIGO_VALIDADE_MINUTOS = 15;
 
     public ServicoService(
             ServicoRepository servicoRepository,
@@ -172,6 +177,172 @@ public class ServicoService {
         }
 
         servico.setStatus(proximo);
+
+        return mapper.toResponse(servicoRepository.save(servico));
+    }
+
+    @Transactional
+    public String gerarCodigoInicio(UUID id, UUID clienteId) {
+
+        Servico servico = buscarEntidade(id);
+
+        if (servico.getCliente() == null
+                || !servico.getCliente().getId().equals(clienteId)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Este serviço não pertence a este cliente");
+        }
+
+        if (servico.getStatus() != StatusServico.CONTRATADO) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "O serviço precisa estar contratado para iniciar");
+        }
+
+        String codigo = String.format("%06d", RANDOM.nextInt(1_000_000));
+
+        servico.setCodigoInicio(codigo);
+        servico.setCodigoInicioExpiraEm(
+                LocalDateTime.now().plusMinutes(CODIGO_VALIDADE_MINUTOS));
+
+        servicoRepository.save(servico);
+
+        return codigo;
+    }
+
+    @Transactional
+    public ServicoResponse confirmarCodigoInicio(
+            UUID id,
+            UUID profissionalId,
+            String codigo) {
+
+        Servico servico = buscarEntidade(id);
+
+        if (servico.getProfissional() == null
+                || !servico.getProfissional().getId().equals(profissionalId)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Este serviço não pertence a este profissional");
+        }
+
+        if (servico.getStatus() != StatusServico.CONTRATADO) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "O serviço não está aguardando início");
+        }
+
+        if (servico.getCodigoInicio() == null) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Nenhum código foi gerado para este serviço ainda");
+        }
+
+        if (servico.getCodigoInicioExpiraEm() == null
+                || LocalDateTime.now().isAfter(servico.getCodigoInicioExpiraEm())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.GONE,
+                    "Código expirado. Peça ao cliente para gerar um novo");
+        }
+
+        if (!servico.getCodigoInicio().equals(codigo == null ? null : codigo.trim())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Código incorreto");
+        }
+
+        servico.setStatus(StatusServico.ANDAMENTO);
+        servico.setCodigoInicio(null);
+        servico.setCodigoInicioExpiraEm(null);
+
+        return mapper.toResponse(servicoRepository.save(servico));
+    }
+
+    @Transactional
+    public String gerarCodigoFinalizacao(UUID id, UUID clienteId) {
+
+        Servico servico = buscarEntidade(id);
+
+        if (servico.getCliente() == null
+                || !servico.getCliente().getId().equals(clienteId)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Este serviço não pertence a este cliente");
+        }
+
+        if (servico.getStatus() != StatusServico.ANDAMENTO) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "O serviço precisa estar em andamento para ser finalizado");
+        }
+
+        String codigo = String.format("%06d", RANDOM.nextInt(1_000_000));
+
+        servico.setCodigoInicio(codigo);
+        servico.setCodigoInicioExpiraEm(
+                LocalDateTime.now().plusMinutes(CODIGO_VALIDADE_MINUTOS));
+
+        servicoRepository.save(servico);
+
+        return codigo;
+    }
+
+    @Transactional
+    public ServicoResponse confirmarCodigoFinalizacao(
+            UUID id,
+            UUID profissionalId,
+            String codigo) {
+
+        Servico servico = buscarEntidade(id);
+
+        if (servico.getProfissional() == null
+                || !servico.getProfissional().getId().equals(profissionalId)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Este serviço não pertence a este profissional");
+        }
+
+        if (servico.getStatus() != StatusServico.ANDAMENTO) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "O serviço não está aguardando finalização");
+        }
+
+        if (servico.getCodigoInicio() == null) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Nenhum código foi gerado para este serviço ainda");
+        }
+
+        if (servico.getCodigoInicioExpiraEm() == null
+                || LocalDateTime.now().isAfter(servico.getCodigoInicioExpiraEm())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.GONE,
+                    "Código expirado. Peça ao cliente para gerar um novo");
+        }
+
+        if (!servico.getCodigoInicio().equals(codigo == null ? null : codigo.trim())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Código incorreto");
+        }
+
+        servico.setStatus(StatusServico.FINALIZADO);
+        servico.setCodigoInicio(null);
+        servico.setCodigoInicioExpiraEm(null);
 
         return mapper.toResponse(servicoRepository.save(servico));
     }

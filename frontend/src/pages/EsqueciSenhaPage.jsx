@@ -1,20 +1,3 @@
-/**
- * WorkMatch — pages/EsqueciSenhaPage.jsx
- * CEL Design System v3.0
- *
- * Tela 1 do fluxo de recuperação de senha.
- * O cliente/profissional informa CPF + data de nascimento.
- * Se os dados baterem com algum cadastro (usuarios ou profissionais),
- * o backend devolve um "resetToken" de curta duração, que é passado
- * (via state da navegação) para a tela RedefinirSenhaPage.
- *
- * ENDPOINT QUE O BACKEND PRECISA EXPOR (ainda não existe):
- *   POST /api/auth/esqueci-senha/verificar
- *   body: { cpf: "00000000000", dataNascimento: "2000-01-01" }
- *   200 -> { resetToken: "..." }
- *   404 -> { message: "CPF ou data de nascimento não encontrados." }
- */
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 

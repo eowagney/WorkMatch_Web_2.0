@@ -36,16 +36,6 @@ public class UsuarioController {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> atualizar(@PathVariable UUID id,
-                                       @RequestBody @Valid UsuarioDTO dto) {
-        Usuario usuario = service.atualizar(id, dto);
-        return ResponseEntity.ok(Map.of(
-                "success", "Usuário atualizado com sucesso",
-                "usuario", Map.of("nome", usuario.getNome())
-        ));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable UUID id) {
         service.deletar(id);

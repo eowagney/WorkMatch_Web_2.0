@@ -46,14 +46,12 @@ public class UsuarioDTO {
         @Size(min = 6, message = "Senha mínima de 6 caracteres")
         private String senha;
 
-        // Role é sempre definida pelo controller (CLIENTE ou PROFISSIONAL)
-        // Não validada aqui para evitar falha quando o frontend não envia
         private String role;
 
-        // Exclusivos de Profissional
         private String especialidade;
         private String descricao;
         private Integer experienciaAnos;
         private BigDecimal avaliacaoMedia;
         private Integer totalAvaliacoes;
+
 }

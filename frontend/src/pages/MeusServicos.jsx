@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import PageLayout from "../components/PageLayout";
@@ -10,9 +10,10 @@ import { useToast } from "../hooks/useToast";
 const TABS_CLIENTE = [
   { label: "Publicados",   statuses: ["PUBLICADO"] },
   { label: "Negociando",   statuses: ["NEGOCIANDO"] },
-  { label: "Em andamento", statuses: ["CONTRATADO","ANDAMENTO"] },
+  { label: "Contratado",   statuses: ["CONTRATADO"] },
+  { label: "Em andamento", statuses: ["ANDAMENTO"] },
   { label: "Concluídos",   statuses: ["FINALIZADO"] },
-  { label: "Arquivados",   statuses: ["ARQUIVADO"] },
+  { label: "Arquivados",   statuses: ["CANCELADO"] },
 ];
 
 const TABS_PROFISSIONAL = [
@@ -27,6 +28,7 @@ const STATUS_LABEL = {
   ANDAMENTO:  "Em andamento",
   FINALIZADO: "Finalizado",
   ARQUIVADO:  "Arquivado",
+  CANCELADO:  "Cancelado",
 };
 
 const STATUS_CLASS = {
@@ -36,11 +38,8 @@ const STATUS_CLASS = {
   ANDAMENTO:  "wm-badge--green",
   FINALIZADO: "wm-badge--gray",
   ARQUIVADO:  "wm-badge--gray",
+  CANCELADO:  "wm-badge--gray",
 };
-
-/* =========================================================
-   ÍCONES SVG
-========================================================= */
 
 function IconMessageCircle() {
   return (
@@ -129,6 +128,16 @@ function IconX() {
   );
 }
 
+function IconKey() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m21 2-9.6 9.6"/>
+      <circle cx="7.5" cy="15.5" r="5.5"/>
+    </svg>
+  );
+}
+
 function IconInbox() {
   return (
     <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
@@ -138,10 +147,6 @@ function IconInbox() {
     </svg>
   );
 }
-
-/* =========================================================
-   MINI ESTRELAS para exibir nota já dada
-========================================================= */
 
 function MiniEstrelas({ nota }) {
   return (
@@ -162,6 +167,17 @@ const canvasStyle = {
   padding:      "var(--sp-6)",
 };
 
+const modalOverlayStyle = {
+  position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.45)",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  padding: "var(--sp-4)", zIndex: 1000,
+};
+
+const modalBoxStyle = {
+  background: "#fff", borderRadius: "var(--r-lg)", padding: "var(--sp-6)",
+  width: "100%", maxWidth: 380, boxShadow: "var(--shadow-lg, 0 10px 40px rgba(0,0,0,0.2))",
+};
+
 function ServicoSkeletonCard() {
   return (
     <Card>
@@ -180,10 +196,6 @@ function ServicoSkeletonCard() {
   );
 }
 
-/* =========================================================
-   COMPONENTE PRINCIPAL
-========================================================= */
-
 export default function MeusServicos() {
   const { user }  = useAuth();
   const navigate  = useNavigate();
@@ -192,17 +204,39 @@ export default function MeusServicos() {
   const ehProfissional = user?.role === "PROFISSIONAL";
   const tabs           = ehProfissional ? TABS_PROFISSIONAL : TABS_CLIENTE;
 
-  const [abaAtiva,          setAbaAtiva]          = useState(0);
+  const [searchParams]     = useSearchParams();
+  const abaInicial         = (() => {
+    const p = Number(searchParams.get("aba"));
+    return Number.isInteger(p) && p >= 0 && p < tabs.length ? p : 0;
+  })();
+
+  const [abaAtiva,          setAbaAtiva]          = useState(abaInicial);
   const [servicos,          setServicos]           = useState([]);
   const [avaliados,         setAvaliados]          = useState(new Set());
   const [notasAvaliadas,    setNotasAvaliadas]     = useState({});  // servicoId → nota
   const [carregando,        setCarregando]         = useState(true);
   const [servicoAvaliando,  setServicoAvaliando]   = useState(null);
 
+  // ── Código de confirmação (início e finalização de serviço) ──
+  // tipo: "inicio" | "fim"
+  const [codigoGerado,      setCodigoGerado]       = useState(null); // { servico, codigo, tipo } — visão do cliente
+  const [gerandoCodigo,     setGerandoCodigo]       = useState(false);
+  const [confirmando,       setConfirmando]         = useState(null); // { servico, tipo } — visão do profissional
+  const [codigoDigitado,    setCodigoDigitado]      = useState("");
+  const [erroCodigo,        setErroCodigo]          = useState("");
+  const [enviandoCodigo,    setEnviandoCodigo]      = useState(false);
+
   useEffect(() => {
     if (!user?.id) return;
     carregarDados();
   }, [user?.id]);
+
+  useEffect(() => {
+    const p = Number(searchParams.get("aba"));
+    if (Number.isInteger(p) && p >= 0 && p < tabs.length) {
+      setAbaAtiva(p);
+    }
+  }, [searchParams]);
 
   async function carregarDados() {
     setCarregando(true);
@@ -244,22 +278,62 @@ export default function MeusServicos() {
     }
   }
 
-  async function handleAvancar(servico) {
+  // Cliente: gera o código de início ou de finalização do serviço (o status só muda quando o profissional confirmar)
+  async function handleGerarCodigo(servico, tipo) {
+    setGerandoCodigo(true);
     try {
-      await api.patch(`/api/servicos/${servico.id}/avancar`, null, {
-        params: { profissionalId: servico.profissionalId },
+      const endpoint = tipo === "fim" ? "finalizar-codigo" : "iniciar-codigo";
+      const res = await api.post(`/api/servicos/${servico.id}/${endpoint}`, null, {
+        params: { clienteId: user.id },
       });
-      await carregarDados();
-      showToast("Status atualizado.", "sucesso");
+      setCodigoGerado({ servico, tipo, codigo: res.data?.codigo ?? res.data });
     } catch (err) {
-      showToast(err.response?.data?.message ?? "Erro ao avançar status.", "erro");
+      showToast(err.response?.data?.message ?? "Erro ao gerar código.", "erro");
+    } finally {
+      setGerandoCodigo(false);
+    }
+  }
+
+  // Profissional: abre o campo para digitar o código informado pelo cliente
+  function handleAbrirConfirmacao(servico, tipo) {
+    setConfirmando({ servico, tipo });
+    setCodigoDigitado("");
+    setErroCodigo("");
+  }
+
+  // Profissional: confere o código; se correto, o backend avança o status (ANDAMENTO ou FINALIZADO)
+  async function handleConfirmarCodigo() {
+    if (!confirmando) return;
+    const codigo = codigoDigitado.trim();
+    if (!codigo) {
+      setErroCodigo("Digite o código informado pelo cliente.");
+      return;
+    }
+    setEnviandoCodigo(true);
+    setErroCodigo("");
+    try {
+      const endpoint = confirmando.tipo === "fim" ? "confirmar-codigo-finalizacao" : "confirmar-codigo";
+      await api.post(`/api/servicos/${confirmando.servico.id}/${endpoint}`, { codigo }, {
+        params: { profissionalId: user.id },
+      });
+      setConfirmando(null);
+      setCodigoDigitado("");
+      await carregarDados();
+      showToast(
+        confirmando.tipo === "fim" ? "Serviço finalizado com sucesso!" : "Serviço iniciado com sucesso!",
+        "sucesso"
+      );
+    } catch (err) {
+      setErroCodigo(err.response?.data?.message ?? "Código incorreto. Confira com o cliente e tente novamente.");
+    } finally {
+      setEnviandoCodigo(false);
     }
   }
 
   async function handleCancelar(servico) {
     if (!window.confirm(`Cancelar o serviço "${servico.titulo}"?`)) return;
     try {
-      await api.delete(`/api/servicos/${servico.id}`);
+      await api.patch(`/api/servicos/${servico.id}/arquivar`);
       await carregarDados();
       showToast("Serviço cancelado.", "sucesso");
     } catch (err) {
@@ -409,7 +483,8 @@ export default function MeusServicos() {
                         paddingTop: "var(--sp-3)",
                         borderTop: "1px solid var(--clr-border)",
                       }}>
-                        {["NEGOCIANDO","CONTRATADO","ANDAMENTO"].includes(servico.status) && (
+                        {((ehProfissional && ["NEGOCIANDO","CONTRATADO","ANDAMENTO"].includes(servico.status)) ||
+                          (!ehProfissional && ["CONTRATADO","ANDAMENTO"].includes(servico.status))) && (
                           <Btn size="sm" variant="outline"
                             onClick={() => navigate(`/chat/${servico.id}/${servico.profissionalId ?? user.id}`)}>
                             <IconMessageCircle /> Chat
@@ -423,13 +498,32 @@ export default function MeusServicos() {
                           </Btn>
                         )}
 
-                        {!ehProfissional && ["CONTRATADO","ANDAMENTO"].includes(servico.status) && (
-                          <Btn size="sm" onClick={() => handleAvancar(servico)}>
-                            <IconArrowRight /> Avançar status
+                        {!ehProfissional && servico.status === "CONTRATADO" && (
+                          <Btn size="sm" disabled={gerandoCodigo} onClick={() => handleGerarCodigo(servico, "inicio")}>
+                            <IconKey /> Iniciar serviço
                           </Btn>
                         )}
 
-                        {servico.status === "PUBLICADO" && (
+                        {ehProfissional && servico.status === "CONTRATADO" && (
+                          <Btn size="sm" onClick={() => handleAbrirConfirmacao(servico, "inicio")}>
+                            <IconKey /> Confirmar código
+                          </Btn>
+                        )}
+
+                        {!ehProfissional && servico.status === "ANDAMENTO" && (
+                          <Btn size="sm" disabled={gerandoCodigo}
+                            onClick={() => handleGerarCodigo(servico, "fim")}>
+                            <IconKey /> Finalizar serviço
+                          </Btn>
+                        )}
+
+                        {ehProfissional && servico.status === "ANDAMENTO" && (
+                          <Btn size="sm" onClick={() => handleAbrirConfirmacao(servico, "fim")}>
+                            <IconKey /> Confirmar código de finalização
+                          </Btn>
+                        )}
+
+                        {!ehProfissional && ["PUBLICADO","NEGOCIANDO","CONTRATADO"].includes(servico.status) && (
                           <Btn size="sm" variant="outline" onClick={() => handleCancelar(servico)}>
                             <IconX /> Cancelar
                           </Btn>
@@ -462,6 +556,100 @@ export default function MeusServicos() {
             onClose={() => setServicoAvaliando(null)}
             onSucesso={handleAvaliacaoSucesso}
           />
+        )}
+
+        {/* ── Modal: código gerado (visão do cliente) ── */}
+        {codigoGerado && (
+          <div style={modalOverlayStyle} onClick={() => setCodigoGerado(null)}>
+            <div style={modalBoxStyle} onClick={e => e.stopPropagation()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--sp-3)" }}>
+                <h3 style={{ fontFamily: "var(--font-display)", fontSize: 17, color: "var(--clr-navy)", margin: 0 }}>
+                  {codigoGerado.tipo === "fim" ? "Código de finalização do serviço" : "Código de início do serviço"}
+                </h3>
+                <button onClick={() => setCodigoGerado(null)} aria-label="Fechar"
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--clr-text-light)", padding: 4 }}>
+                  <IconX />
+                </button>
+              </div>
+
+              <p style={{ fontSize: 13, color: "var(--clr-text-mid)", lineHeight: 1.6, marginBottom: "var(--sp-4)" }}>
+                Informe este código ao profissional pessoalmente. Assim que ele digitar o código correto,
+                o serviço <strong>"{codigoGerado.servico.titulo}"</strong> passa para{" "}
+                {codigoGerado.tipo === "fim" ? '"Finalizado"' : '"Em andamento"'}.
+              </p>
+
+              <div style={{
+                textAlign: "center", fontFamily: "var(--font-display)", fontWeight: 700,
+                fontSize: 36, letterSpacing: 8, color: "var(--clr-blue)",
+                background: "var(--clr-blue-pale)", borderRadius: "var(--r-lg)",
+                padding: "var(--sp-5) var(--sp-3)", marginBottom: "var(--sp-4)",
+              }}>
+                {codigoGerado.codigo}
+              </div>
+
+              <Btn onClick={() => setCodigoGerado(null)} style={{ width: "100%" }}>
+                Entendi
+              </Btn>
+            </div>
+          </div>
+        )}
+
+        {/* ── Modal: confirmar código (visão do profissional) ── */}
+        {confirmando && (
+          <div style={modalOverlayStyle} onClick={() => !enviandoCodigo && setConfirmando(null)}>
+            <div style={modalBoxStyle} onClick={e => e.stopPropagation()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--sp-3)" }}>
+                <h3 style={{ fontFamily: "var(--font-display)", fontSize: 17, color: "var(--clr-navy)", margin: 0 }}>
+                  {confirmando.tipo === "fim" ? "Confirmar finalização do serviço" : "Confirmar início do serviço"}
+                </h3>
+                <button onClick={() => !enviandoCodigo && setConfirmando(null)} aria-label="Fechar"
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--clr-text-light)", padding: 4 }}>
+                  <IconX />
+                </button>
+              </div>
+
+              <p style={{ fontSize: 13, color: "var(--clr-text-mid)", lineHeight: 1.6, marginBottom: "var(--sp-3)" }}>
+                Peça ao cliente o código gerado para <strong>"{confirmando.servico.titulo}"</strong> e digite abaixo
+                para {confirmando.tipo === "fim" ? "finalizar" : "iniciar"} o serviço.
+              </p>
+
+              <input
+                type="text"
+                inputMode="numeric"
+                autoFocus
+                value={codigoDigitado}
+                onChange={e => { setCodigoDigitado(e.target.value); setErroCodigo(""); }}
+                onKeyDown={e => { if (e.key === "Enter") handleConfirmarCodigo(); }}
+                placeholder="Digite o código"
+                style={{
+                  width: "100%", boxSizing: "border-box", textAlign: "center",
+                  fontSize: 22, letterSpacing: 6, fontWeight: 700, color: "var(--clr-navy)",
+                  padding: "var(--sp-3)", borderRadius: "var(--r-md)",
+                  border: `1px solid ${erroCodigo ? "var(--clr-danger)" : "var(--clr-border)"}`,
+                  marginBottom: "var(--sp-2)", fontFamily: "inherit",
+                }}
+              />
+
+              {erroCodigo && (
+                <p style={{ fontSize: 12, color: "var(--clr-danger)", marginTop: 0, marginBottom: "var(--sp-3)" }}>
+                  {erroCodigo}
+                </p>
+              )}
+
+              <div style={{ display: "flex", gap: "var(--sp-2)", marginTop: "var(--sp-3)" }}>
+                <Btn variant="outline" style={{ flex: 1 }}
+                  disabled={enviandoCodigo}
+                  onClick={() => setConfirmando(null)}>
+                  Cancelar
+                </Btn>
+                <Btn style={{ flex: 1 }}
+                  disabled={enviandoCodigo}
+                  onClick={handleConfirmarCodigo}>
+                  {enviandoCodigo ? "Confirmando…" : "Confirmar"}
+                </Btn>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </PageLayout>

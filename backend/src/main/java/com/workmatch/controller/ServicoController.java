@@ -1,7 +1,9 @@
-    package com.workmatch.controller;
+package com.workmatch.controller;
 
+    import com.workmatch.dto.ConfirmarCodigoDTO;
     import com.workmatch.dto.ServicoDTO;
     import com.workmatch.dto.response.CandidatureResponse;
+    import com.workmatch.dto.response.CodigoGeradoResponse;
     import com.workmatch.dto.response.PageResponse;
     import com.workmatch.dto.response.ServicoResponse;
     import com.workmatch.model.StatusServico;
@@ -62,6 +64,42 @@
                 @PathVariable UUID id,
                 @RequestParam(required = false) UUID profissionalId) {
             return ResponseEntity.ok(service.avancarStatus(id, profissionalId));
+        }
+
+        // Cliente: gera o código de início de serviço (status permanece CONTRATADO)
+        @PostMapping("/{id}/iniciar-codigo")
+        public ResponseEntity<CodigoGeradoResponse> iniciarCodigo(
+                @PathVariable UUID id,
+                @RequestParam UUID clienteId) {
+            String codigo = service.gerarCodigoInicio(id, clienteId);
+            return ResponseEntity.ok(new CodigoGeradoResponse(codigo));
+        }
+
+        // Profissional: confere o código; se correto, o status avança para ANDAMENTO
+        @PostMapping("/{id}/confirmar-codigo")
+        public ResponseEntity<ServicoResponse> confirmarCodigo(
+                @PathVariable UUID id,
+                @RequestParam UUID profissionalId,
+                @RequestBody @Valid ConfirmarCodigoDTO dto) {
+            return ResponseEntity.ok(service.confirmarCodigoInicio(id, profissionalId, dto.codigo()));
+        }
+
+        // Cliente: gera o código de finalização de serviço (status permanece ANDAMENTO)
+        @PostMapping("/{id}/finalizar-codigo")
+        public ResponseEntity<CodigoGeradoResponse> finalizarCodigo(
+                @PathVariable UUID id,
+                @RequestParam UUID clienteId) {
+            String codigo = service.gerarCodigoFinalizacao(id, clienteId);
+            return ResponseEntity.ok(new CodigoGeradoResponse(codigo));
+        }
+
+        // Profissional: confere o código; se correto, o status avança para FINALIZADO
+        @PostMapping("/{id}/confirmar-codigo-finalizacao")
+        public ResponseEntity<ServicoResponse> confirmarCodigoFinalizacao(
+                @PathVariable UUID id,
+                @RequestParam UUID profissionalId,
+                @RequestBody @Valid ConfirmarCodigoDTO dto) {
+            return ResponseEntity.ok(service.confirmarCodigoFinalizacao(id, profissionalId, dto.codigo()));
         }
 
         @PatchMapping("/{id}/arquivar")

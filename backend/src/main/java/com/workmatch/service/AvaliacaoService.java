@@ -94,6 +94,12 @@ public class AvaliacaoService {
                 .stream().map(this::toResponse).toList();
     }
 
+    // Retorna as avaliações completas feitas por este cliente
+    public List<AvaliacaoResponse> listarPorCliente(UUID clienteId) {
+        return avaliacaoRepo.findByClienteId(clienteId)
+                .stream().map(this::toResponse).toList();
+    }
+
     // Retorna os IDs de serviços já avaliados por este cliente
     public List<UUID> servicosAvaliadosPorCliente(UUID clienteId) {
         return avaliacaoRepo.findByClienteId(clienteId)
