@@ -1,7 +1,3 @@
-/**
- * WorkMatch 2.0 — AuthContext
- * BUG CORRIGIDO: logout agora limpa AuthContext + localStorage token
- */
 import { createContext, useState, useEffect, useContext } from "react";
 
 export const AuthContext = createContext();
@@ -30,7 +26,7 @@ export function AuthProvider({ children }) {
   function logout() {
     setUser(null);
     localStorage.removeItem("user");
-    localStorage.removeItem("token"); // BUG FIX: limpa o token também
+    localStorage.removeItem("token");
   }
 
   return (

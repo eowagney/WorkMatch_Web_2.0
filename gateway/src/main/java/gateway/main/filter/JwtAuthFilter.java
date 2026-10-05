@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -34,11 +35,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private final String    clientId;
     private final String    clientSecret;
 
-    /*
-     * Endpoints que não precisam de token.
-     * POST /api/usuarios e POST /api/profissionais são públicos (cadastro).
-     * GET /api/servicos/publicados é público (vitrine).
-     */
     private static final Set<String> PUBLIC_EXACT_ANY_METHOD = Set.of(
             "/api/login",
             "/api/auth/recuperar-senha",
@@ -46,10 +42,10 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     );
 
     private static final List<String> PUBLIC_PREFIX_ANY_METHOD = List.of(
-            "/api/validar/"
+        "/api/validar/",
+        "/api/auth/esqueci-senha/"
     );
 
-    // Par método+path para endpoints que precisam de verificação de método
     private static final List<String[]> PUBLIC_METHOD_PATH = List.of(
             new String[]{"POST",  "/api/usuarios"},
             new String[]{"POST",  "/api/profissionais"},
@@ -69,37 +65,61 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        ServerHttpRequest req  = exchange.getRequest();
-        String            path = req.getPath().value();
-        HttpMethod        method = req.getMethod();
+        ServerHttpRequest limpa = exchange.getRequest().mutate()
+                .headers(h -> h.remove("X-Keycloak-Id"))
+                .build();
+        ServerWebExchange ex = exchange.mutate().request(limpa).build();
+
+        String     path   = limpa.getPath().value();
+        HttpMethod method = limpa.getMethod();
 
         if (isPublic(path, method)) {
-            return chain.filter(exchange);
+            return chain.filter(ex);
         }
 
-        List<String> authHeaders = req.getHeaders().get(HttpHeaders.AUTHORIZATION);
+        List<String> authHeaders = limpa.getHeaders().get(HttpHeaders.AUTHORIZATION);
         if (authHeaders == null || authHeaders.isEmpty()) {
-            return rejeitar(exchange, "Token de autenticação ausente");
+            return rejeitar(ex, "Token de autenticação ausente");
         }
-
         String bearer = authHeaders.get(0);
         if (!bearer.startsWith("Bearer ")) {
-            return rejeitar(exchange, "Formato de token inválido");
+            return rejeitar(ex, "Formato de token inválido");
         }
 
-        String token = bearer.substring(7);
-
-        return introspect(token)
-                .flatMap(ativo -> {
-                    if (ativo) {
-                        return chain.filter(exchange);
+        return introspect1(bearer.substring(7))
+                .flatMap(info -> {
+                    if (!Boolean.TRUE.equals(info.get("active"))) {
+                        return rejeitar(ex, "Token inválido ou expirado");
                     }
-                    return rejeitar(exchange, "Token inválido ou expirado");
+                    ServerHttpRequest comId = ex.getRequest().mutate()
+                            .header("X-Keycloak-Id", String.valueOf(info.get("sub")))
+                            .build();
+                    return chain.filter(ex.mutate().request(comId).build());
                 })
                 .onErrorResume(e -> {
                     log.error("Erro ao validar token: {}", e.getMessage());
-                    return rejeitar(exchange, "Erro interno ao validar autenticação");
+                    return rejeitar(ex, "Erro interno ao validar autenticação");
                 });
+    }
+
+    private Mono<Map<String, Object>> introspect1(String token) {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("token",         token);
+        form.add("client_id",     clientId);
+        form.add("client_secret", clientSecret);
+
+        final String introspectUrl2 = introspectUrl;
+        if (introspectUrl2 != null) {
+            return webClient.post()
+                    .uri(introspectUrl2)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                    .body(BodyInserters.fromFormData(form))
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .onErrorReturn(Map.of("active", false));
+        } else {
+            return null;
+        }
     }
 
     private boolean isPublic(String path, HttpMethod method) {

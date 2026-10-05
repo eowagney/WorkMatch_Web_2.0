@@ -1,6 +1,4 @@
-/**
- * WorkMatch 2.0 — App.jsx
- */
+
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth, AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -14,7 +12,6 @@ import HomeCliente                from "./pages/HomeCliente";
 import HomeProfissional           from "./pages/HomeProfissional";
 import MeusServicos               from "./pages/MeusServicos";
 import NovoServico                from "./pages/NovoServico";
-import PerfilProfissional         from "./pages/PerfilProfissional";
 import PerfilPublicoProfissional  from "./pages/PerfilPublicoProfissional";
 import ConfiguracaoPerfilPage     from "./pages/ConfiguracaoPerfilPage";
 import SuporteClientePage         from "./pages/SuporteClientePage";
@@ -56,9 +53,6 @@ export default function App() {
           <Route path="/novo-servico" element={
             <ProtectedRoute roles={["CLIENTE"]}><NovoServico /></ProtectedRoute>
           } />
-          <Route path="/perfil" element={
-            <ProtectedRoute roles={["CLIENTE"]}><ConfiguracaoPerfilPage /></ProtectedRoute>
-          } />
           <Route path="/servico/:servicoId/candidatos" element={
             <ProtectedRoute roles={["CLIENTE"]}><CandidatosServico /></ProtectedRoute>
           } />
@@ -67,16 +61,18 @@ export default function App() {
           <Route path="/home-profissional" element={
             <ProtectedRoute roles={["PROFISSIONAL"]}><HomeProfissional /></ProtectedRoute>
           } />
-          <Route path="/perfil-profissional" element={
-            <ProtectedRoute roles={["PROFISSIONAL"]}><PerfilProfissional /></ProtectedRoute>
-          } />
-
           {/* ── PERFIL PÚBLICO — acessível por ambos os roles ── */}
           <Route path="/profissional/:profissionalId" element={
             <ProtectedRoute><PerfilPublicoProfissional /></ProtectedRoute>
           } />
 
           {/* ── COMPARTILHADAS ── */}
+          <Route path="/perfil" element={
+            <ProtectedRoute><ConfiguracaoPerfilPage /></ProtectedRoute>
+          } />
+          <Route path="/meus-servicos" element={
+            <ProtectedRoute><MeusServicos /></ProtectedRoute>
+          } />
           <Route path="/meus-servicos" element={
             <ProtectedRoute><MeusServicos /></ProtectedRoute>
           } />

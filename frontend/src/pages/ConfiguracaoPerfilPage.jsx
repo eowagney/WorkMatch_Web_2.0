@@ -41,6 +41,15 @@ const IcoMapPin = ({ size = 14 }) => (
   </svg>
 );
 
+const IcoBriefcase = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    aria-hidden="true">
+    <rect width="20" height="14" x="2" y="7" rx="2" ry="2"/>
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+  </svg>
+);
+
 const IcoLock = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -128,6 +137,10 @@ function AlterarSenhaCard() {
 
 export default function ConfiguracaoPerfilPage() {
   const { user, setUser } = useAuth();
+
+  // Mesma tela para cliente e profissional; muda o endpoint e o card extra.
+  const ehProfissional = user?.role === "PROFISSIONAL";
+  const baseUrl        = ehProfissional ? "/api/profissionais" : "/api/usuarios";
   const { toast, showToast, hideToast } = useToast();
 
   const [form, setForm] = useState({
@@ -137,6 +150,9 @@ export default function ConfiguracaoPerfilPage() {
     endereco: "",
     cidade:   "",
     estado:   "",
+    especialidade:   "",
+    descricao:       "",
+    experienciaAnos: "",
   });
   const [dadosOriginais, setDadosOriginais] = useState(null);
   const [carregando, setCarregando] = useState(true);
@@ -170,7 +186,7 @@ export default function ConfiguracaoPerfilPage() {
   useEffect(() => {
     if (!user?.id) return;
 
-    api.get(`/api/usuarios/${user.id}`)
+    api.get(ehProfissional ? `${baseUrl}/${user.id}/perfil` : `${baseUrl}/${user.id}`)
       .then(({ data }) => {
         const carregado = {
           nome:     data.nome     ?? "",
@@ -179,6 +195,9 @@ export default function ConfiguracaoPerfilPage() {
           endereco: data.endereco ?? "",
           cidade:   data.cidade   ?? "",
           estado:   data.estado   ?? "",
+          especialidade:   data.especialidade   ?? "",
+          descricao:       data.descricao       ?? "",
+          experienciaAnos: data.experienciaAnos ?? "",
         };
         setForm(carregado);
         setDadosOriginais(carregado);
@@ -213,15 +232,24 @@ export default function ConfiguracaoPerfilPage() {
         endereco: form.endereco,
         cidade:   form.cidade,
         estado:   form.estado,
+        ...(ehProfissional && {
+          especialidade:   form.especialidade,
+          descricao:       form.descricao,
+          experienciaAnos: form.experienciaAnos === "" ? null : Number(form.experienciaAnos),
+        }),
       };
 
-      const { data } = await api.put(`/api/usuarios/${user.id}`, payload);
-      if (data?.usuario?.nome) {
-        setUser(prev => ({ ...prev, nome: data.usuario.nome }));
-      }
+      const { data } = await api.put(`${baseUrl}/${user.id}`, payload);
       setDadosOriginais(form);
       showToast("Perfil atualizado com sucesso.", "success");
+
+      // Atualizar o nome na sessão não pode derrubar o "salvo com sucesso".
+      // Exige que o AuthContext exponha setUser.
+      if (data?.usuario?.nome && typeof setUser === "function") {
+        setUser(prev => ({ ...prev, nome: data.usuario.nome }));
+      }
     } catch (err) {
+      console.error("Erro ao salvar perfil:", err);
       const msg = err.response?.data?.message ?? "Erro ao salvar. Tente novamente.";
       showToast(msg, "error");
     } finally {
@@ -359,6 +387,11 @@ export default function ConfiguracaoPerfilPage() {
                     <p style={{ fontSize: 13, color: "var(--clr-text-light)" }}>
                       {form.email || "seu@email.com"}
                     </p>
+                    {form.especialidade && (
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--clr-blue)", marginTop: 6 }}>
+                        {form.especialidade}
+                      </p>
+                    )}
                   </div>
 
                   <Divider />
@@ -415,6 +448,54 @@ export default function ConfiguracaoPerfilPage() {
                   </div>
                 </CardBody>
               </Card>
+
+              {ehProfissional && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--sp-2)" }}>
+                      <IcoBriefcase /> Perfil profissional
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-4)" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--sp-4)" }}>
+                      <Input
+                        label="Especialidade"
+                        name="especialidade"
+                        value={form.especialidade}
+                        onChange={handleChange}
+                        placeholder="Ex.: Eletricista, Encanador"
+                        required
+                      />
+                      <Input
+                        label="Anos de experiência"
+                        name="experienciaAnos"
+                        type="number"
+                        min="0"
+                        value={form.experienciaAnos}
+                        onChange={handleChange}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="wm-form-group">
+                      <label className="wm-label" htmlFor="descricao-field">Sobre você</label>
+                      <textarea
+                        id="descricao-field"
+                        name="descricao"
+                        value={form.descricao}
+                        onChange={handleChange}
+                        rows={4}
+                        placeholder="Conte sua experiência e os serviços que você realiza."
+                        className="wm-input"
+                        style={{ resize: "vertical", fontFamily: "inherit" }}
+                      />
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+              )}
 
               <Card>
                 <CardHeader>

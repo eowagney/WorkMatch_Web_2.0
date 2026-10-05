@@ -85,9 +85,9 @@ const NAV_CLIENTE = [
 
 const NAV_PROFISSIONAL = [
   { label: "Publicações",   path: "/home",               icon: IconHome      },
-  { label: "Meus serviços", path: "/meus-servicos",      icon: IconClipboard }, // corrigido
-  { label: "Meu perfil",    path: "/perfil-profissional", icon: IconUser      },
-  { label: "Suporte",       path: "/suporte",             icon: IconMessage   },
+  { label: "Meus serviços", path: "/meus-servicos",      icon: IconClipboard },
+  { label: "Meu perfil",    path: "/perfil",             icon: IconUser      },
+  { label: "Suporte",       path: "/suporte",            icon: IconMessage   },
 ];
 
 export default function MenuLateral() {

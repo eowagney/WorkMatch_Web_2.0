@@ -17,11 +17,23 @@ const TABS_CLIENTE = [
 ];
 
 const TABS_PROFISSIONAL = [
-  { label: "Ativos",      statuses: ["NEGOCIANDO","CONTRATADO","ANDAMENTO"] },
-  { label: "Finalizados", statuses: ["FINALIZADO"] },
+  { label: "Candidatura enviada", statuses: ["CANDIDATURA"] },
+  { label: "Negociando",          statuses: ["NEGOCIANDO"] },
+  { label: "Contratado",          statuses: ["CONTRATADO"] },
+  { label: "Andamento",           statuses: ["ANDAMENTO"] },
+  { label: "Finalizado",          statuses: ["FINALIZADO"] },
+  { label: "Arquivado",           statuses: ["ARQUIVADO","CANCELADO"] },
 ];
 
+// Aba "Todos": statuses null = sem filtro
+const TAB_TODOS = { label: "Todos", statuses: null };
+
+function pertenceAba(tab, servico) {
+  return tab.statuses === null || tab.statuses.includes(servico.status);
+}
+
 const STATUS_LABEL = {
+  CANDIDATURA: "Candidatura enviada",
   PUBLICADO:  "Publicado",
   NEGOCIANDO: "Negociando",
   CONTRATADO: "Contratado",
@@ -32,6 +44,7 @@ const STATUS_LABEL = {
 };
 
 const STATUS_CLASS = {
+  CANDIDATURA: "wm-badge--blue",
   PUBLICADO:  "wm-badge--blue",
   NEGOCIANDO: "wm-badge--yellow",
   CONTRATADO: "wm-badge--green",
@@ -161,6 +174,13 @@ function MiniEstrelas({ nota }) {
   );
 }
 
+// Candidatura -> formato de serviço, com status virtual "CANDIDATURA".
+// Aceita tanto { id, servicoId, titulo, ... } quanto { id, servico: { ... } }.
+function normalizarCandidatura(c) {
+  const s = c.servico ?? c;
+  return { ...s, id: c.servicoId ?? s.id, status: "CANDIDATURA", candidaturaId: c.id };
+}
+
 const canvasStyle = {
   background:   "var(--clr-blue-pale)",
   borderRadius: "var(--r-lg)",
@@ -202,18 +222,26 @@ export default function MeusServicos() {
   const { showToast } = useToast();
 
   const ehProfissional = user?.role === "PROFISSIONAL";
-  const tabs           = ehProfissional ? TABS_PROFISSIONAL : TABS_CLIENTE;
+  const tabsBase       = ehProfissional ? TABS_PROFISSIONAL : TABS_CLIENTE;
+  const tabs           = [TAB_TODOS, ...tabsBase];
+
+  // ?aba=N continua apontando para as abas originais (sem contar "Todos");
+  // sem parâmetro, abre em "Todos".
+  function abaDaUrl(params) {
+    const raw = params.get("aba");
+    if (raw === null) return 0;
+    const p = Number(raw);
+    return Number.isInteger(p) && p >= 0 && p < tabsBase.length ? p + 1 : 0;
+  }
 
   const [searchParams]     = useSearchParams();
-  const abaInicial         = (() => {
-    const p = Number(searchParams.get("aba"));
-    return Number.isInteger(p) && p >= 0 && p < tabs.length ? p : 0;
-  })();
+  const abaInicial         = abaDaUrl(searchParams);
 
   const [abaAtiva,          setAbaAtiva]          = useState(abaInicial);
   const [servicos,          setServicos]           = useState([]);
   const [avaliados,         setAvaliados]          = useState(new Set());
   const [notasAvaliadas,    setNotasAvaliadas]     = useState({});  // servicoId → nota
+  const [avaliacoesRecebidas, setAvaliacoesRecebidas] = useState({}); // servicoId → { nota, comentario } — visão do profissional
   const [carregando,        setCarregando]         = useState(true);
   const [servicoAvaliando,  setServicoAvaliando]   = useState(null);
 
@@ -232,10 +260,7 @@ export default function MeusServicos() {
   }, [user?.id]);
 
   useEffect(() => {
-    const p = Number(searchParams.get("aba"));
-    if (Number.isInteger(p) && p >= 0 && p < tabs.length) {
-      setAbaAtiva(p);
-    }
+    setAbaAtiva(abaDaUrl(searchParams));
   }, [searchParams]);
 
   async function carregarDados() {
@@ -245,14 +270,34 @@ export default function MeusServicos() {
         ? `/api/servicos/profissional/${user.id}`
         : `/api/servicos/cliente/${user.id}`;
 
-      const [resServicos, resAvaliacoes] = await Promise.all([
+      const [resServicos, resAvaliacoes, resCandidaturas, resRecebidas] = await Promise.all([
         api.get(endpoint),
         ehProfissional
           ? Promise.resolve({ data: [] })
           : api.get(`/api/avaliacoes/cliente/${user.id}/avaliados`).catch(() => ({ data: [] })),
+        ehProfissional
+          ? api.get(`/api/candidaturas/profissional/${user.id}`).catch(() => ({ data: [] }))
+          : Promise.resolve({ data: [] }),
+        ehProfissional
+          ? api.get(`/api/avaliacoes/profissional/${user.id}`).catch(() => ({ data: [] }))
+          : Promise.resolve({ data: [] }),
       ]);
 
-      setServicos(resServicos.data ?? []);
+      if (ehProfissional) {
+        const recebidas = {};
+        (resRecebidas.data ?? []).forEach(av => {
+          if (av.servicoId) recebidas[av.servicoId] = { nota: av.nota, comentario: av.comentario };
+        });
+        setAvaliacoesRecebidas(recebidas);
+      }
+
+      const lista = resServicos.data ?? [];
+      const idsNaLista = new Set(lista.map(s => s.id));
+      const candidaturas = (resCandidaturas.data ?? [])
+        .map(normalizarCandidatura)
+        .filter(c => !idsNaLista.has(c.id)); // se já virou serviço do profissional, não duplica
+
+      setServicos([...lista, ...candidaturas]);
 
       // IDs avaliados
       const ids = new Set((resAvaliacoes.data ?? []).map(a =>
@@ -347,10 +392,10 @@ export default function MeusServicos() {
     showToast("Avaliação enviada!", "sucesso");
   }
 
-  const servicosFiltrados = servicos.filter(s => tabs[abaAtiva].statuses.includes(s.status));
+  const servicosFiltrados = servicos.filter(s => pertenceAba(tabs[abaAtiva], s));
 
   function contarPorTab(tab) {
-    return servicos.filter(s => tab.statuses.includes(s.status)).length;
+    return servicos.filter(s => pertenceAba(tab, s)).length;
   }
 
   return (
@@ -437,6 +482,7 @@ export default function MeusServicos() {
               {servicosFiltrados.map(servico => {
                 const jaAvaliou = avaliados.has(servico.id);
                 const notaDada  = notasAvaliadas[servico.id];
+                const avaliacaoRecebida = avaliacoesRecebidas[servico.id];
 
                 return (
                   <Card key={servico.id}>
@@ -467,6 +513,26 @@ export default function MeusServicos() {
                           <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--clr-text-mid)", margin: 0 }}>
                             <IconUser /> {servico.profissionalNome}
                           </p>
+                        )}
+
+                        {ehProfissional && servico.status === "FINALIZADO" && (
+                          avaliacaoRecebida ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "var(--clr-text-mid)", marginTop: "var(--sp-1)" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <span style={{ fontWeight: 600 }}>Avaliação do cliente:</span>
+                                <MiniEstrelas nota={avaliacaoRecebida.nota} />
+                              </div>
+                              {avaliacaoRecebida.comentario && (
+                                <p style={{ margin: 0, fontStyle: "italic", lineHeight: 1.5 }}>
+                                  “{avaliacaoRecebida.comentario}”
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="wm-badge wm-badge--yellow" style={{ alignSelf: "flex-start", marginTop: "var(--sp-1)" }}>
+                              A AVALIAR
+                            </span>
+                          )
                         )}
 
                         {!ehProfissional && jaAvaliou && notaDada && (
@@ -506,7 +572,7 @@ export default function MeusServicos() {
 
                         {ehProfissional && servico.status === "CONTRATADO" && (
                           <Btn size="sm" onClick={() => handleAbrirConfirmacao(servico, "inicio")}>
-                            <IconKey /> Confirmar código
+                            <IconKey /> Inserir código
                           </Btn>
                         )}
 
@@ -519,14 +585,21 @@ export default function MeusServicos() {
 
                         {ehProfissional && servico.status === "ANDAMENTO" && (
                           <Btn size="sm" onClick={() => handleAbrirConfirmacao(servico, "fim")}>
-                            <IconKey /> Confirmar código de finalização
+                            <IconKey /> Inserir código
                           </Btn>
                         )}
 
-                        {!ehProfissional && ["PUBLICADO","NEGOCIANDO","CONTRATADO"].includes(servico.status) && (
+                        {((!ehProfissional && ["PUBLICADO","NEGOCIANDO","CONTRATADO"].includes(servico.status)) ||
+                          (ehProfissional && ["NEGOCIANDO","CONTRATADO"].includes(servico.status))) && (
                           <Btn size="sm" variant="outline" onClick={() => handleCancelar(servico)}>
                             <IconX /> Cancelar
                           </Btn>
+                        )}
+
+                        {ehProfissional && servico.status === "CANDIDATURA" && (
+                          <span style={{ fontSize: 13, color: "var(--clr-text-light)" }}>
+                            Aguardando resposta do cliente.
+                          </span>
                         )}
 
                         {!ehProfissional && servico.status === "FINALIZADO" && !jaAvaliou && (

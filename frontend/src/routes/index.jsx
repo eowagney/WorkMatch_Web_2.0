@@ -54,8 +54,8 @@ export default function AppRoutes() {
             <Route path="/home-profissional" element={
                 <ProtectedRoute roles={["PROFISSIONAL"]}><HomeProfissional /></ProtectedRoute>
             } />
-            <Route path="/perfil-profissional" element={
-                <ProtectedRoute roles={["PROFISSIONAL"]}><PerfilProfissional /></ProtectedRoute>
+            <Route path="/perfil" element={
+                <ProtectedRoute roles={["PROFISSIONAL"]}><ConfiguracaoPerfilPage /></ProtectedRoute>
             } />
 
             {/* ── COMPARTILHADA por role ── */}

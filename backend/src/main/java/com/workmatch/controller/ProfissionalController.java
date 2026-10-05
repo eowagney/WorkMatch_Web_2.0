@@ -1,6 +1,8 @@
 package com.workmatch.controller;
 
+import com.workmatch.dto.AtualizarProfissionalDTO;
 import com.workmatch.dto.UsuarioDTO;
+import com.workmatch.dto.response.ProfissionalPerfilResponse;
 import com.workmatch.dto.response.ProfissionalResponse;
 import com.workmatch.model.Profissional;
 import com.workmatch.service.ProfissionalService;
@@ -48,6 +50,25 @@ public class ProfissionalController {
                 p.getCidade(),
                 p.getEstado(),
                 p.getAtivo()
+        ));
+    }
+
+    @GetMapping("/{id}/perfil")
+    public ResponseEntity<ProfissionalPerfilResponse> perfil(@PathVariable UUID id) {
+        Profissional p = profissionalService.buscarPorId(id);
+        return ResponseEntity.ok(new ProfissionalPerfilResponse(
+                p.getId(), p.getNome(), p.getEmail(), p.getTelefone(),
+                p.getEndereco(), p.getCidade(), p.getEstado(),
+                p.getEspecialidade(), p.getDescricao(), p.getExperienciaAnos()));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizar(@PathVariable UUID id,
+                                    @RequestBody @Valid AtualizarProfissionalDTO dto) {
+        Profissional p = profissionalService.atualizar(id, dto);
+        return ResponseEntity.ok(Map.of(
+                "success", "Perfil atualizado com sucesso",
+                "usuario", Map.of("nome", p.getNome())
         ));
     }
 }

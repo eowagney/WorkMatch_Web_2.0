@@ -1,5 +1,6 @@
 package com.workmatch.service;
 
+import com.workmatch.dto.AtualizarProfissionalDTO;
 import com.workmatch.dto.UsuarioDTO;
 import com.workmatch.keycloak.KeycloakIntegrationException;
 import com.workmatch.keycloak.KeycloakRegistrationService;
@@ -99,18 +100,22 @@ public class ProfissionalService {
     }
 
     @Transactional
-    public Profissional atualizar(UUID id, UsuarioDTO dto) {
+    public Profissional atualizar(UUID id, AtualizarProfissionalDTO dto) {
         Profissional p = buscarPorId(id);
-        p.setNome(dto.getNome());
-        p.setEmail(dto.getEmail());
-        p.setTelefone(limpar(dto.getTelefone()));
-        p.setDataNascimento(dto.getDataNascimento());
-        p.setEndereco(dto.getEndereco());
-        p.setCidade(dto.getCidade());
-        p.setEstado(dto.getEstado());
-        p.setEspecialidade(dto.getEspecialidade());
-        p.setDescricao(dto.getDescricao());
-        p.setExperienciaAnos(dto.getExperienciaAnos());
+
+        boolean mudouEmail = !dto.email().equalsIgnoreCase(p.getEmail());
+        if (mudouEmail && (profissionalRepo.existsByEmail(dto.email()) || usuarioRepo.existsByEmail(dto.email())))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
+
+        p.setNome(dto.nome());
+        p.setEmail(dto.email());
+        p.setTelefone(limpar(dto.telefone()));
+        p.setEndereco(dto.endereco());
+        p.setCidade(dto.cidade());
+        p.setEstado(dto.estado());
+        p.setEspecialidade(dto.especialidade());
+        p.setDescricao(dto.descricao());
+        p.setExperienciaAnos(dto.experienciaAnos());
         return profissionalRepo.save(p);
     }
 
