@@ -5,6 +5,8 @@ import api from "../services/api";
 import PageLayout from "../components/PageLayout";
 import { Card, CardHeader, CardBody, CardTitle, Btn } from "../components/ui";
 import { useToast } from "../hooks/useToast";
+import { usePlano } from "../hooks/usePlano";
+import AvisoPlanos from "../components/AvisoPlanos";
 
 const ESPECIALIDADES = [
   "Todas", "Eletricista", "Encanador", "Pintor", "Pedreiro",
@@ -109,6 +111,8 @@ export default function HomeProfissional() {
   const { user }  = useAuth();
   const navigate  = useNavigate();
   const { showToast, Toast } = useToast();
+  const { ativo, plano, restantes } = usePlano();
+  const limiteAtingido = ativo && plano === "BASICO" && restantes === 0;
 
   const [servicos,     setServicos]     = useState([]);
   const [paginacao,    setPaginacao]    = useState({ page: 0, totalPages: 1, last: true });
@@ -187,6 +191,8 @@ export default function HomeProfissional() {
       `}</style>
 
       <div style={canvasStyle}>
+
+        <AvisoPlanos dismissivel comLink />
 
         {/* Filtros — agora agrupados num Card temático */}
         <Card style={{ marginBottom: "var(--sp-6)" }}>
@@ -283,8 +289,8 @@ export default function HomeProfissional() {
                       <div className="wm-service-card__actions">
                         {/* 1. Candidatar */}
                         {podeCandidatar && (
-                          <Btn size="sm" onClick={() => handleCandidatar(servico)} disabled={emEnvio}>
-                            {emEnvio ? "Enviando..." : "Candidatar-se"}
+                          <Btn size="sm" onClick={() => handleCandidatar(servico)} disabled={emEnvio || limiteAtingido}>
+                            {limiteAtingido ? "Limite do plano" : emEnvio ? "Enviando..." : "Candidatar-se"}
                           </Btn>
                         )}
 

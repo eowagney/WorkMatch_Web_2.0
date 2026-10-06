@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,4 +47,7 @@ public interface ServicoRepository extends JpaRepository<Servico, UUID> {
 
     List<Servico> findByEspecialidadeContainingIgnoreCaseAndCidadeContainingIgnoreCaseAndStatus(
             String especialidade, String cidade, StatusServico status);
+            
+    long countByProfissionalIdAndDataContratacaoGreaterThanEqualAndStatusIn(
+        UUID profissionalId, LocalDateTime inicio, Collection<StatusServico> status);
 }

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { usePlano } from "../hooks/usePlano";
 
 
 const IconHome = () => (
@@ -97,8 +98,18 @@ export default function MenuLateral() {
   const { user, logout } = useAuth();
 
   const isProfissional = user?.role === "PROFISSIONAL";
-  const navItems       = isProfissional ? NAV_PROFISSIONAL : NAV_CLIENTE;
   const nomeInicial    = user?.nome ? user.nome.charAt(0).toUpperCase() : "U";
+
+  const { ativo, plano } = usePlano();
+  const navItems = isProfissional
+    ? [
+        ...NAV_PROFISSIONAL,
+        { label: "Planos", path: "/planos", icon: IconClipboard },
+        ...(ativo && plano === "PREMIUM"
+          ? [{ label: "Relatórios", path: "/relatorios", icon: IconClipboard }]
+          : []),
+      ]
+    : NAV_CLIENTE;
 
   function handleLogout() {
     logout();

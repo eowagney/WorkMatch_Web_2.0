@@ -59,6 +59,9 @@ public class Servico {
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
+    @Column(name = "data_contratacao")
+    private LocalDateTime dataContratacao;
+
     private LocalDateTime dataAtualizacao;
 
     @PrePersist

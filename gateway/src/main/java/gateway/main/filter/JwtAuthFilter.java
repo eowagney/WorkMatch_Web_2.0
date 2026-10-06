@@ -49,7 +49,8 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private static final List<String[]> PUBLIC_METHOD_PATH = List.of(
             new String[]{"POST",  "/api/usuarios"},
             new String[]{"POST",  "/api/profissionais"},
-            new String[]{"GET",   "/api/servicos/publicados"}
+            new String[]{"GET",   "/api/servicos/publicados"},
+            new String[]{"GET", "/api/planos/config"}
     );
 
     public JwtAuthFilter(

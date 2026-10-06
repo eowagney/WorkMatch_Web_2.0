@@ -8,6 +8,8 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -81,6 +83,12 @@ public class Profissional {
         this.dataCadastro = LocalDateTime.now();
     }
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private Plano plano = Plano.BASICO;
+
+    private LocalDateTime planoValidoAte;
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -140,4 +148,12 @@ public class Profissional {
 
     public LocalDateTime getDataCadastro() { return dataCadastro; }
     public void setDataCadastro(LocalDateTime dataCadastro) { this.dataCadastro = dataCadastro; }
+
+    public Plano getPlano() { return plano; }
+    public void setPlano(Plano plano) { this.plano = plano; }
+
+    public LocalDateTime getPlanoValidoAte() { return planoValidoAte; }
+    public void setPlanoValidoAte(LocalDateTime planoValidoAte) {
+        this.planoValidoAte = planoValidoAte;
+    }
 }

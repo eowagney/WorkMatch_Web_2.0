@@ -17,6 +17,8 @@ import ConfiguracaoPerfilPage     from "./pages/ConfiguracaoPerfilPage";
 import SuporteClientePage         from "./pages/SuporteClientePage";
 import CandidatosServico          from "./pages/CandidatosServico";
 import ChatServico                from "./pages/ChatServico";
+import PlanosPage     from "./pages/PlanosPage";
+import RelatoriosPage from "./pages/RelatoriosPage";
 
 import "./styles.css";
 
@@ -58,6 +60,12 @@ export default function App() {
           } />
 
           {/* ── PROFISSIONAL ── */}
+          <Route path="/planos" element={
+            <ProtectedRoute roles={["PROFISSIONAL"]}><PlanosPage /></ProtectedRoute>
+          } />
+          <Route path="/relatorios" element={
+            <ProtectedRoute roles={["PROFISSIONAL"]}><RelatoriosPage /></ProtectedRoute>
+          } />
           <Route path="/home-profissional" element={
             <ProtectedRoute roles={["PROFISSIONAL"]}><HomeProfissional /></ProtectedRoute>
           } />

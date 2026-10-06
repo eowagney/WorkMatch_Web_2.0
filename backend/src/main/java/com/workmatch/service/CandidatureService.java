@@ -49,6 +49,9 @@ public class CandidatureService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Profissional não encontrado"));
 
+        PlanoService planoService = new PlanoService(null, null);
+        planoService.validarPodeContratar(profissional);                
+
         Candidature candidatura = new Candidature();
         candidatura.setServico(servico);
         candidatura.setProfissional(profissional);

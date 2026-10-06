@@ -3,6 +3,7 @@ import { useNavigate }      from "react-router-dom";
 import { Btn, Input }       from "../components/ui";
 import Toast                from "../components/Toast";
 import { useToast }         from "../hooks/useToast";
+import AvisoPlanos          from "../components/Avisoplanos";
 import api, { validacaoService } from "../services/api";
 
 /* =========================================================
@@ -373,6 +374,8 @@ export default function CadastroPage() {
             <form onSubmit={handleSubmit}
               style={{ display: "flex", flexDirection: "column", gap: "var(--sp-4)", marginTop: "var(--sp-5)" }}
               noValidate>
+
+              {isProfissional && step === 1 && <AvisoPlanos />}
 
               {/* ── PASSO 1: Dados pessoais ── */}
               {step === 1 && (
